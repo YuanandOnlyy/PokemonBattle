@@ -1,0 +1,120 @@
+{
+  "source": "/Users/maclab/Documents/cortezyuan/PokemonBattleArenaSwiftUI/PokemonBattleArenaSwiftUI/Screens/BattleHistoryView.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "NO BATTLES YET\nGO BATTLE!",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 36
+        }
+      },
+      {
+        "comment": "",
+        "key": "BATTLE HISTORY",
+        "location": {
+          "startingColumn": 18,
+          "startingLine": 63
+        }
+      },
+      {
+        "comment": "",
+        "key": "◀",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 60
+        }
+      },
+      {
+        "comment": "",
+        "key": "▶",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 159
+        }
+      },
+      {
+        "comment": "",
+        "key": "★",
+        "location": {
+          "startingColumn": 34,
+          "startingLine": 129
+        }
+      },
+      {
+        "comment": "",
+        "key": "✗",
+        "location": {
+          "startingColumn": 47,
+          "startingLine": 129
+        }
+      },
+      {
+        "comment": "",
+        "key": "VS",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 137
+        }
+      },
+      {
+        "comment": "",
+        "key": "VS %@",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 151
+        }
+      },
+      {
+        "comment": "",
+        "key": "+%lld XP",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 147
+        }
+      },
+      {
+        "comment": "",
+        "key": "★ WIN",
+        "location": {
+          "startingColumn": 42,
+          "startingLine": 144
+        }
+      },
+      {
+        "comment": "",
+        "key": "✗ LOSS",
+        "location": {
+          "startingColumn": 59,
+          "startingLine": 144
+        }
+      },
+      {
+        "comment": "",
+        "key": "TEAM: %@",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 169
+        }
+      },
+      {
+        "comment": "",
+        "key": "DURATION: %@",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 170
+        }
+      },
+      {
+        "comment": "",
+        "key": "DAMAGE: %lld | CRITS: %lld",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 171
+        }
+      }
+    ]
+  },
+  "version": 1
+}

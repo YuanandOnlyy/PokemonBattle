@@ -1,0 +1,136 @@
+{
+  "source": "/Users/maclab/Documents/cortezyuan/PokemonBattleArenaSwiftUI/PokemonBattleArenaSwiftUI/Screens/TrainerProfileView.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "TRAINER PROFILE",
+        "location": {
+          "startingColumn": 18,
+          "startingLine": 65
+        }
+      },
+      {
+        "comment": "",
+        "key": "◀",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 62
+        }
+      },
+      {
+        "comment": "",
+        "key": "🧢",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 81
+        }
+      },
+      {
+        "comment": "",
+        "key": "LEVEL %lld %@",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 129
+        }
+      },
+      {
+        "comment": "",
+        "key": "XP: %lld/%lld",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 130
+        }
+      },
+      {
+        "comment": "",
+        "key": "",
+        "location": {
+          "startingColumn": 35,
+          "startingLine": 97
+        }
+      },
+      {
+        "comment": "",
+        "key": "OK",
+        "location": {
+          "startingColumn": 32,
+          "startingLine": 110
+        }
+      },
+      {
+        "comment": "",
+        "key": "⚔ BATTLE RECORD",
+        "location": {
+          "startingColumn": 18,
+          "startingLine": 141
+        }
+      },
+      {
+        "comment": "",
+        "key": "WIN RATE",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 149
+        }
+      },
+      {
+        "comment": "",
+        "key": "%lld%%",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 151
+        }
+      },
+      {
+        "comment": "",
+        "key": "📊 COMBAT STATS",
+        "location": {
+          "startingColumn": 18,
+          "startingLine": 178
+        }
+      },
+      {
+        "comment": "",
+        "key": "FAVORITE",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 189
+        }
+      },
+      {
+        "comment": "",
+        "key": "🏆 ACHIEVEMENTS",
+        "location": {
+          "startingColumn": 18,
+          "startingLine": 205
+        }
+      },
+      {
+        "comment": "",
+        "key": "%lld OF %lld UNLOCKED",
+        "location": {
+          "startingColumn": 18,
+          "startingLine": 221
+        }
+      },
+      {
+        "comment": "",
+        "key": "★",
+        "location": {
+          "startingColumn": 49,
+          "startingLine": 212
+        }
+      },
+      {
+        "comment": "",
+        "key": "☆",
+        "location": {
+          "startingColumn": 62,
+          "startingLine": 212
+        }
+      }
+    ]
+  },
+  "version": 1
+}

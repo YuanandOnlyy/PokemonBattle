@@ -1,0 +1,168 @@
+{
+  "source": "/Users/maclab/Documents/cortezyuan/PokemonBattleArenaSwiftUI/PokemonBattleArenaSwiftUI/Screens/PokedexView.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "POKÉDEX",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 43
+        }
+      },
+      {
+        "comment": "",
+        "key": "%lld/%lld",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 45
+        }
+      },
+      {
+        "comment": "",
+        "key": "◀",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 40
+        }
+      },
+      {
+        "comment": "",
+        "key": "🔍 SEARCH BY NAME OR NUMBER...",
+        "location": {
+          "startingColumn": 59,
+          "startingLine": 53
+        }
+      },
+      {
+        "comment": "",
+        "key": "",
+        "location": {
+          "startingColumn": 27,
+          "startingLine": 53
+        }
+      },
+      {
+        "comment": "",
+        "key": "NO POKEMON FOUND",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 69
+        }
+      },
+      {
+        "comment": "",
+        "key": "▶",
+        "location": {
+          "startingColumn": 18,
+          "startingLine": 104
+        }
+      },
+      {
+        "comment": "",
+        "key": "HP:%lld ATK:%lld DEF:%lld SPD:%lld",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 100
+        }
+      },
+      {
+        "comment": "",
+        "key": "#%@",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 95
+        }
+      },
+      {
+        "comment": "",
+        "key": "#%@ %@",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 135
+        }
+      },
+      {
+        "comment": "",
+        "key": "◀",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 132
+        }
+      },
+      {
+        "comment": "",
+        "key": "ABILITY: %@",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 150
+        }
+      },
+      {
+        "comment": "",
+        "key": "DATA NOT FOUND",
+        "location": {
+          "startingColumn": 18,
+          "startingLine": 293
+        }
+      },
+      {
+        "comment": "",
+        "key": "BASE STATS",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 193
+        }
+      },
+      {
+        "comment": "",
+        "key": "TOTAL BST",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 210
+        }
+      },
+      {
+        "comment": "",
+        "key": "%lld",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 212
+        }
+      },
+      {
+        "comment": "",
+        "key": "%lld",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 227
+        }
+      },
+      {
+        "comment": "",
+        "key": "PWR: %@",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 251
+        }
+      },
+      {
+        "comment": "",
+        "key": "ACC: %lld%%",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 252
+        }
+      },
+      {
+        "comment": "",
+        "key": "PP: %lld",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 253
+        }
+      }
+    ]
+  },
+  "version": 1
+}

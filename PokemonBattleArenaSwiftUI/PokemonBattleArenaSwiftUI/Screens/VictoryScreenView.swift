@@ -2,7 +2,7 @@ import SwiftUI
 
 /// Static Pokemon-name -> PokeAPI-id lookup for the MVP artwork. Mirrors the `POKEMON_IDS` map
 /// duplicated in both VictoryScreen.tsx and DefeatScreen.tsx.
-enum PokemonNameLookup {
+nonisolated enum PokemonNameLookup {
     static let ids: [String: Int] = [
         "pikachu": 25, "raichu": 26, "charizard": 6, "charmander": 4, "blastoise": 9, "squirtle": 7,
         "venusaur": 3, "bulbasaur": 1, "gengar": 94, "haunter": 93, "lucario": 448, "riolu": 447,

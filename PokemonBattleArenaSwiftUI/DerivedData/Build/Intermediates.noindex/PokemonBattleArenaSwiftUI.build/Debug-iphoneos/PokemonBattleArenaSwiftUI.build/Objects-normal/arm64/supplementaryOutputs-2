@@ -1,0 +1,37 @@
+{
+  "/Users/maclab/Documents/cortezyuan/PokemonBattleArenaSwiftUI/PokemonBattleArenaSwiftUI/Components/PokemonSpriteView.swift" : {
+    "const-values" : "/Users/maclab/Documents/cortezyuan/PokemonBattleArenaSwiftUI/DerivedData/Build/Intermediates.noindex/PokemonBattleArenaSwiftUI.build/Debug-iphoneos/PokemonBattleArenaSwiftUI.build/Objects-normal/arm64/PokemonSpriteView.swiftconstvalues",
+    "dependencies" : "/Users/maclab/Documents/cortezyuan/PokemonBattleArenaSwiftUI/DerivedData/Build/Intermediates.noindex/PokemonBattleArenaSwiftUI.build/Debug-iphoneos/PokemonBattleArenaSwiftUI.build/Objects-normal/arm64/PokemonSpriteView.d",
+    "diagnostics" : "/Users/maclab/Documents/cortezyuan/PokemonBattleArenaSwiftUI/DerivedData/Build/Intermediates.noindex/PokemonBattleArenaSwiftUI.build/Debug-iphoneos/PokemonBattleArenaSwiftUI.build/Objects-normal/arm64/PokemonSpriteView.dia",
+    "object" : "/Users/maclab/Documents/cortezyuan/PokemonBattleArenaSwiftUI/DerivedData/Build/Intermediates.noindex/PokemonBattleArenaSwiftUI.build/Debug-iphoneos/PokemonBattleArenaSwiftUI.build/Objects-normal/arm64/PokemonSpriteView.o",
+    "swift-dependencies" : "/Users/maclab/Documents/cortezyuan/PokemonBattleArenaSwiftUI/DerivedData/Build/Intermediates.noindex/PokemonBattleArenaSwiftUI.build/Debug-iphoneos/PokemonBattleArenaSwiftUI.build/Objects-normal/arm64/PokemonSpriteView.swiftdeps"
+  },
+  "/Users/maclab/Documents/cortezyuan/PokemonBattleArenaSwiftUI/PokemonBattleArenaSwiftUI/Components/RetroButtonStyle.swift" : {
+    "const-values" : "/Users/maclab/Documents/cortezyuan/PokemonBattleArenaSwiftUI/DerivedData/Build/Intermediates.noindex/PokemonBattleArenaSwiftUI.build/Debug-iphoneos/PokemonBattleArenaSwiftUI.build/Objects-normal/arm64/RetroButtonStyle.swiftconstvalues",
+    "dependencies" : "/Users/maclab/Documents/cortezyuan/PokemonBattleArenaSwiftUI/DerivedData/Build/Intermediates.noindex/PokemonBattleArenaSwiftUI.build/Debug-iphoneos/PokemonBattleArenaSwiftUI.build/Objects-normal/arm64/RetroButtonStyle.d",
+    "diagnostics" : "/Users/maclab/Documents/cortezyuan/PokemonBattleArenaSwiftUI/DerivedData/Build/Intermediates.noindex/PokemonBattleArenaSwiftUI.build/Debug-iphoneos/PokemonBattleArenaSwiftUI.build/Objects-normal/arm64/RetroButtonStyle.dia",
+    "object" : "/Users/maclab/Documents/cortezyuan/PokemonBattleArenaSwiftUI/DerivedData/Build/Intermediates.noindex/PokemonBattleArenaSwiftUI.build/Debug-iphoneos/PokemonBattleArenaSwiftUI.build/Objects-normal/arm64/RetroButtonStyle.o",
+    "swift-dependencies" : "/Users/maclab/Documents/cortezyuan/PokemonBattleArenaSwiftUI/DerivedData/Build/Intermediates.noindex/PokemonBattleArenaSwiftUI.build/Debug-iphoneos/PokemonBattleArenaSwiftUI.build/Objects-normal/arm64/RetroButtonStyle.swiftdeps"
+  },
+  "/Users/maclab/Documents/cortezyuan/PokemonBattleArenaSwiftUI/PokemonBattleArenaSwiftUI/Components/TypeBadgeView.swift" : {
+    "const-values" : "/Users/maclab/Documents/cortezyuan/PokemonBattleArenaSwiftUI/DerivedData/Build/Intermediates.noindex/PokemonBattleArenaSwiftUI.build/Debug-iphoneos/PokemonBattleArenaSwiftUI.build/Objects-normal/arm64/TypeBadgeView.swiftconstvalues",
+    "dependencies" : "/Users/maclab/Documents/cortezyuan/PokemonBattleArenaSwiftUI/DerivedData/Build/Intermediates.noindex/PokemonBattleArenaSwiftUI.build/Debug-iphoneos/PokemonBattleArenaSwiftUI.build/Objects-normal/arm64/TypeBadgeView.d",
+    "diagnostics" : "/Users/maclab/Documents/cortezyuan/PokemonBattleArenaSwiftUI/DerivedData/Build/Intermediates.noindex/PokemonBattleArenaSwiftUI.build/Debug-iphoneos/PokemonBattleArenaSwiftUI.build/Objects-normal/arm64/TypeBadgeView.dia",
+    "object" : "/Users/maclab/Documents/cortezyuan/PokemonBattleArenaSwiftUI/DerivedData/Build/Intermediates.noindex/PokemonBattleArenaSwiftUI.build/Debug-iphoneos/PokemonBattleArenaSwiftUI.build/Objects-normal/arm64/TypeBadgeView.o",
+    "swift-dependencies" : "/Users/maclab/Documents/cortezyuan/PokemonBattleArenaSwiftUI/DerivedData/Build/Intermediates.noindex/PokemonBattleArenaSwiftUI.build/Debug-iphoneos/PokemonBattleArenaSwiftUI.build/Objects-normal/arm64/TypeBadgeView.swiftdeps"
+  },
+  "/Users/maclab/Documents/cortezyuan/PokemonBattleArenaSwiftUI/PokemonBattleArenaSwiftUI/Components/TypeFilterBar.swift" : {
+    "const-values" : "/Users/maclab/Documents/cortezyuan/PokemonBattleArenaSwiftUI/DerivedData/Build/Intermediates.noindex/PokemonBattleArenaSwiftUI.build/Debug-iphoneos/PokemonBattleArenaSwiftUI.build/Objects-normal/arm64/TypeFilterBar.swiftconstvalues",
+    "dependencies" : "/Users/maclab/Documents/cortezyuan/PokemonBattleArenaSwiftUI/DerivedData/Build/Intermediates.noindex/PokemonBattleArenaSwiftUI.build/Debug-iphoneos/PokemonBattleArenaSwiftUI.build/Objects-normal/arm64/TypeFilterBar.d",
+    "diagnostics" : "/Users/maclab/Documents/cortezyuan/PokemonBattleArenaSwiftUI/DerivedData/Build/Intermediates.noindex/PokemonBattleArenaSwiftUI.build/Debug-iphoneos/PokemonBattleArenaSwiftUI.build/Objects-normal/arm64/TypeFilterBar.dia",
+    "object" : "/Users/maclab/Documents/cortezyuan/PokemonBattleArenaSwiftUI/DerivedData/Build/Intermediates.noindex/PokemonBattleArenaSwiftUI.build/Debug-iphoneos/PokemonBattleArenaSwiftUI.build/Objects-normal/arm64/TypeFilterBar.o",
+    "swift-dependencies" : "/Users/maclab/Documents/cortezyuan/PokemonBattleArenaSwiftUI/DerivedData/Build/Intermediates.noindex/PokemonBattleArenaSwiftUI.build/Debug-iphoneos/PokemonBattleArenaSwiftUI.build/Objects-normal/arm64/TypeFilterBar.swiftdeps"
+  },
+  "/Users/maclab/Documents/cortezyuan/PokemonBattleArenaSwiftUI/PokemonBattleArenaSwiftUI/Data/GameData.swift" : {
+    "const-values" : "/Users/maclab/Documents/cortezyuan/PokemonBattleArenaSwiftUI/DerivedData/Build/Intermediates.noindex/PokemonBattleArenaSwiftUI.build/Debug-iphoneos/PokemonBattleArenaSwiftUI.build/Objects-normal/arm64/GameData.swiftconstvalues",
+    "dependencies" : "/Users/maclab/Documents/cortezyuan/PokemonBattleArenaSwiftUI/DerivedData/Build/Intermediates.noindex/PokemonBattleArenaSwiftUI.build/Debug-iphoneos/PokemonBattleArenaSwiftUI.build/Objects-normal/arm64/GameData.d",
+    "diagnostics" : "/Users/maclab/Documents/cortezyuan/PokemonBattleArenaSwiftUI/DerivedData/Build/Intermediates.noindex/PokemonBattleArenaSwiftUI.build/Debug-iphoneos/PokemonBattleArenaSwiftUI.build/Objects-normal/arm64/GameData.dia",
+    "object" : "/Users/maclab/Documents/cortezyuan/PokemonBattleArenaSwiftUI/DerivedData/Build/Intermediates.noindex/PokemonBattleArenaSwiftUI.build/Debug-iphoneos/PokemonBattleArenaSwiftUI.build/Objects-normal/arm64/GameData.o",
+    "swift-dependencies" : "/Users/maclab/Documents/cortezyuan/PokemonBattleArenaSwiftUI/DerivedData/Build/Intermediates.noindex/PokemonBattleArenaSwiftUI.build/Debug-iphoneos/PokemonBattleArenaSwiftUI.build/Objects-normal/arm64/GameData.swiftdeps"
+  }
+}

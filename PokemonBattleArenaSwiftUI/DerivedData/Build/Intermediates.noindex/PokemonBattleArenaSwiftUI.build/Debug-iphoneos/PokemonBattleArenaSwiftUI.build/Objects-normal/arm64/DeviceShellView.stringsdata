@@ -1,0 +1,24 @@
+{
+  "source": "/Users/maclab/Documents/cortezyuan/PokemonBattleArenaSwiftUI/PokemonBattleArenaSwiftUI/Components/DeviceShellView.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "Game Boy",
+        "location": {
+          "startingColumn": 18,
+          "startingLine": 40
+        }
+      },
+      {
+        "comment": "",
+        "key": "POWER",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 50
+        }
+      }
+    ]
+  },
+  "version": 1
+}

@@ -1,0 +1,128 @@
+{
+  "source": "/Users/maclab/Documents/cortezyuan/PokemonBattleArenaSwiftUI/PokemonBattleArenaSwiftUI/Screens/TeamBuilderView.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "TEAM BUILDER",
+        "location": {
+          "startingColumn": 18,
+          "startingLine": 46
+        }
+      },
+      {
+        "comment": "",
+        "key": "%lld/3",
+        "location": {
+          "startingColumn": 18,
+          "startingLine": 48
+        }
+      },
+      {
+        "comment": "",
+        "key": "◀",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 42
+        }
+      },
+      {
+        "comment": "",
+        "key": "YOUR TEAM",
+        "location": {
+          "startingColumn": 18,
+          "startingLine": 58
+        }
+      },
+      {
+        "comment": "",
+        "key": "⚠ %@",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 67
+        }
+      },
+      {
+        "comment": "",
+        "key": "CHOOSE %lld MORE",
+        "location": {
+          "startingColumn": 38,
+          "startingLine": 73
+        }
+      },
+      {
+        "comment": "",
+        "key": "⚔ START BATTLE!",
+        "location": {
+          "startingColumn": 71,
+          "startingLine": 73
+        }
+      },
+      {
+        "comment": "",
+        "key": "%lld",
+        "location": {
+          "startingColumn": 35,
+          "startingLine": 98
+        }
+      },
+      {
+        "comment": "",
+        "key": "EMPTY",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 99
+        }
+      },
+      {
+        "comment": "",
+        "key": "🔍 SEARCH POKEMON...",
+        "location": {
+          "startingColumn": 55,
+          "startingLine": 115
+        }
+      },
+      {
+        "comment": "",
+        "key": "",
+        "location": {
+          "startingColumn": 23,
+          "startingLine": 115
+        }
+      },
+      {
+        "comment": "",
+        "key": "NO POKEMON FOUND",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 134
+        }
+      },
+      {
+        "comment": "",
+        "key": "✓",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 156
+        }
+      },
+      {
+        "comment": "",
+        "key": "#%@",
+        "location": {
+          "startingColumn": 18,
+          "startingLine": 164
+        }
+      },
+      {
+        "comment": "",
+        "key": "HP:%lld SPD:%lld",
+        "location": {
+          "startingColumn": 18,
+          "startingLine": 168
+        }
+      }
+    ]
+  },
+  "version": 1
+}

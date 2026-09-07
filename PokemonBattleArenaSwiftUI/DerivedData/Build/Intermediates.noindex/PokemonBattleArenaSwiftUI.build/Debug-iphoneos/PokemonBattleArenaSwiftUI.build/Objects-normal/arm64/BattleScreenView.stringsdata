@@ -1,0 +1,208 @@
+{
+  "source": "/Users/maclab/Documents/cortezyuan/PokemonBattleArenaSwiftUI/PokemonBattleArenaSwiftUI/Screens/BattleScreenView.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "LOADING...",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 18
+        }
+      },
+      {
+        "comment": "",
+        "key": "TURN %lld",
+        "location": {
+          "startingColumn": 18,
+          "startingLine": 101
+        }
+      },
+      {
+        "comment": "",
+        "key": "FOE",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 95
+        }
+      },
+      {
+        "comment": "",
+        "key": "YOU",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 107
+        }
+      },
+      {
+        "comment": "",
+        "key": "REALLY RUN AWAY?",
+        "location": {
+          "startingColumn": 18,
+          "startingLine": 167
+        }
+      },
+      {
+        "comment": "",
+        "key": "YES, RUN!",
+        "location": {
+          "startingColumn": 24,
+          "startingLine": 169
+        }
+      },
+      {
+        "comment": "",
+        "key": "STAY",
+        "location": {
+          "startingColumn": 24,
+          "startingLine": 175
+        }
+      },
+      {
+        "comment": "",
+        "key": "⚔ CHOOSE MOVE",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 200
+        }
+      },
+      {
+        "comment": "",
+        "key": "◀ BACK",
+        "location": {
+          "startingColumn": 16,
+          "startingLine": 297
+        }
+      },
+      {
+        "comment": "",
+        "key": "CHOOSE NEXT POKEMON!",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 253
+        }
+      },
+      {
+        "comment": "",
+        "key": "🔄 YOUR TEAM",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 220
+        }
+      },
+      {
+        "comment": "",
+        "key": "%lld/%lld",
+        "location": {
+          "startingColumn": 34,
+          "startingLine": 238
+        }
+      },
+      {
+        "comment": "",
+        "key": "BAG IS EMPTY",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 268
+        }
+      },
+      {
+        "comment": "",
+        "key": "🎒 BAG",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 263
+        }
+      },
+      {
+        "comment": "",
+        "key": "%@ ×%lld",
+        "location": {
+          "startingColumn": 42,
+          "startingLine": 278
+        }
+      },
+      {
+        "comment": "",
+        "key": "FAINTED",
+        "location": {
+          "startingColumn": 38,
+          "startingLine": 330
+        }
+      },
+      {
+        "comment": "",
+        "key": "%lld%%",
+        "location": {
+          "startingColumn": 50,
+          "startingLine": 330
+        }
+      },
+      {
+        "comment": "",
+        "key": "Lv%lld",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 320
+        }
+      },
+      {
+        "comment": "",
+        "key": "HP",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 327
+        }
+      },
+      {
+        "comment": "",
+        "key": "%lld / %lld",
+        "location": {
+          "startingColumn": 18,
+          "startingLine": 361
+        }
+      },
+      {
+        "comment": "",
+        "key": "Lv%lld",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 351
+        }
+      },
+      {
+        "comment": "",
+        "key": "HP",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 358
+        }
+      },
+      {
+        "comment": "",
+        "key": "PP: %lld/%lld | %lld%%",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 386
+        }
+      },
+      {
+        "comment": "",
+        "key": "PWR:%lld",
+        "location": {
+          "startingColumn": 43,
+          "startingLine": 384
+        }
+      },
+      {
+        "comment": "",
+        "key": "STATUS",
+        "location": {
+          "startingColumn": 65,
+          "startingLine": 384
+        }
+      }
+    ]
+  },
+  "version": 1
+}

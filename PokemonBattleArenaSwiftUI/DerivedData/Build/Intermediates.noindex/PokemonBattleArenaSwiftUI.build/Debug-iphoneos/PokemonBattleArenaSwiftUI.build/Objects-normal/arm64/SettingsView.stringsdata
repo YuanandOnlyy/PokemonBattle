@@ -1,0 +1,88 @@
+{
+  "source": "/Users/maclab/Documents/cortezyuan/PokemonBattleArenaSwiftUI/PokemonBattleArenaSwiftUI/Screens/SettingsView.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "⚙ SETTINGS",
+        "location": {
+          "startingColumn": 18,
+          "startingLine": 45
+        }
+      },
+      {
+        "comment": "",
+        "key": "◀",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 42
+        }
+      },
+      {
+        "comment": "",
+        "key": "ON",
+        "location": {
+          "startingColumn": 28,
+          "startingLine": 140
+        }
+      },
+      {
+        "comment": "",
+        "key": "OFF",
+        "location": {
+          "startingColumn": 35,
+          "startingLine": 140
+        }
+      },
+      {
+        "comment": "",
+        "key": "⚠ DANGER ZONE",
+        "location": {
+          "startingColumn": 18,
+          "startingLine": 198
+        }
+      },
+      {
+        "comment": "",
+        "key": "🗑 RESET GAME DATA",
+        "location": {
+          "startingColumn": 24,
+          "startingLine": 236
+        }
+      },
+      {
+        "comment": "",
+        "key": "ARE YOU SURE?",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 205
+        }
+      },
+      {
+        "comment": "",
+        "key": "THIS WILL DELETE ALL PROGRESS.",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 206
+        }
+      },
+      {
+        "comment": "",
+        "key": "RESET",
+        "location": {
+          "startingColumn": 32,
+          "startingLine": 213
+        }
+      },
+      {
+        "comment": "",
+        "key": "CANCEL",
+        "location": {
+          "startingColumn": 32,
+          "startingLine": 225
+        }
+      }
+    ]
+  },
+  "version": 1
+}

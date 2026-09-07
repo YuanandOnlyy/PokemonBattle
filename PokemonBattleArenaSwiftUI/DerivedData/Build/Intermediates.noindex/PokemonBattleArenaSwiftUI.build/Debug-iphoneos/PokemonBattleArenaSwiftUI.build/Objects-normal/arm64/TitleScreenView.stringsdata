@@ -1,0 +1,96 @@
+{
+  "source": "/Users/maclab/Documents/cortezyuan/PokemonBattleArenaSwiftUI/PokemonBattleArenaSwiftUI/Screens/TitleScreenView.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "🏆%lld/%lld",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 57
+        }
+      },
+      {
+        "comment": "",
+        "key": "LV.%lld",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 59
+        }
+      },
+      {
+        "comment": "",
+        "key": "★ ★ ★ ★ ★ ★ ★ ★",
+        "location": {
+          "startingColumn": 18,
+          "startingLine": 69
+        }
+      },
+      {
+        "comment": "",
+        "key": "POKEMON",
+        "location": {
+          "startingColumn": 18,
+          "startingLine": 72
+        }
+      },
+      {
+        "comment": "",
+        "key": "GAME BOY BATTLE ARENA",
+        "location": {
+          "startingColumn": 18,
+          "startingLine": 77
+        }
+      },
+      {
+        "comment": "",
+        "key": "MAIN MENU",
+        "location": {
+          "startingColumn": 18,
+          "startingLine": 131
+        }
+      },
+      {
+        "comment": "",
+        "key": "📋 DAILY QUESTS",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 171
+        }
+      },
+      {
+        "comment": "",
+        "key": "%lld/%lld ▼",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 173
+        }
+      },
+      {
+        "comment": "",
+        "key": "+%lldXP",
+        "location": {
+          "startingColumn": 34,
+          "startingLine": 191
+        }
+      },
+      {
+        "comment": "",
+        "key": "© FAN GAME",
+        "location": {
+          "startingColumn": 18,
+          "startingLine": 207
+        }
+      },
+      {
+        "comment": "",
+        "key": "W:%lld L:%lld",
+        "location": {
+          "startingColumn": 18,
+          "startingLine": 209
+        }
+      }
+    ]
+  },
+  "version": 1
+}
