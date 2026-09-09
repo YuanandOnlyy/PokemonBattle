@@ -32,6 +32,22 @@ struct TeamBuilderView: View {
             pokemonGrid.staggerAppear(3)
         }
         .background(skin.medium)
+        .onAppear { restoreLastTeamIfNeeded() }
+    }
+
+    private func restoreLastTeamIfNeeded() {
+        guard viewModel.prefillLastTeam else { return }
+        viewModel.prefillLastTeam = false
+        guard team.compactMap({ $0 }).isEmpty else { return }
+        let ids = viewModel.trainerData.lastTeamIDs
+        guard ids.count == 3 else { return }
+        var restored: [Pokemon?] = [nil, nil, nil]
+        for (index, id) in ids.prefix(3).enumerated() {
+            restored[index] = GameData.pokemon(id: id)
+        }
+        if restored.compactMap({ $0 }).count == 3 {
+            team = restored
+        }
     }
 
     private var header: some View {

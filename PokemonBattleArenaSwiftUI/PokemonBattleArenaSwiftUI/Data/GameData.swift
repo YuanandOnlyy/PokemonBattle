@@ -318,7 +318,8 @@ enum GameData {
         settings: .initial,
         consecutiveDefeats: 0,
         dailyQuests: [],
-        dailyQuestDate: ""
+        dailyQuestDate: "",
+        lastTeamIDs: []
     )
 
     static func pokemon(id: Int) -> Pokemon? {

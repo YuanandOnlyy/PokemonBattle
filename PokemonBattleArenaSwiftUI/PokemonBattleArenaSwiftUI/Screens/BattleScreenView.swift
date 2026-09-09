@@ -16,7 +16,7 @@ struct BattleScreenView: View {
                 content(state)
             } else {
                 Text("LOADING...")
-                    .pixelText(10, skin.darkest)
+                    .pixelText(12, skin.darkest)
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                     .background(skin.medium)
             }
@@ -32,10 +32,18 @@ struct BattleScreenView: View {
         let activeEnemy = state.enemyTeam[state.activeEnemyIndex]
         let isBusy = state.phase == .animating || state.phase == .enemyTurn || state.phase == .battleEnd
 
-        return VStack(spacing: 0) {
-            arena(state, activePlayer: activePlayer, activeEnemy: activeEnemy).staggerAppear(0)
-            dialog(state).staggerAppear(1)
-            actionPanel(state, activePlayer: activePlayer, isBusy: isBusy).staggerAppear(2)
+        return GeometryReader { geo in
+            let enemySprite = min(128, max(88, geo.size.width * 0.34))
+            let playerSprite = min(140, max(100, geo.size.width * 0.38))
+
+            VStack(spacing: 0) {
+                arena(state, activePlayer: activePlayer, activeEnemy: activeEnemy,
+                      enemySprite: enemySprite, playerSprite: playerSprite)
+                    .frame(maxHeight: .infinity)
+                    .staggerAppear(0)
+                dialog(state).staggerAppear(1)
+                actionPanel(state, activePlayer: activePlayer, isBusy: isBusy).staggerAppear(2)
+            }
         }
         .background(skin.medium)
         .modifier(ScreenShakeEffect(active: state.isScreenShaking))
@@ -43,46 +51,76 @@ struct BattleScreenView: View {
 
     // MARK: - Arena
 
-    private func arena(_ state: BattleState, activePlayer: BattlePokemon, activeEnemy: BattlePokemon) -> some View {
-        VStack(spacing: 2) {
+    private func arena(
+        _ state: BattleState,
+        activePlayer: BattlePokemon,
+        activeEnemy: BattlePokemon,
+        enemySprite: CGFloat,
+        playerSprite: CGFloat
+    ) -> some View {
+        VStack(spacing: 4) {
             teamTracker(state)
 
-            HStack(alignment: .top) {
+            HStack(alignment: .top, spacing: 8) {
                 EnemyPanelView(pokemon: activeEnemy, skin: skin)
-                Spacer()
+                    .frame(maxWidth: .infinity, alignment: .leading)
+
                 ZStack(alignment: .top) {
-                    PokemonSpriteView(id: activeEnemy.id, back: false, width: 104, height: 104)
+                    PokemonSpriteView(id: activeEnemy.id, back: false, width: enemySprite, height: enemySprite)
                         .scaleEffect(x: -1, y: 1)
                         .opacity(activeEnemy.isFainted ? 0.15 : 1)
                         .saturation(activeEnemy.isFainted ? 0 : 1)
+                        .offset(x: state.isEnemyLunging ? -28 : 0, y: state.isEnemyLunging ? 10 : 0)
+                        .animation(.easeOut(duration: 0.18), value: state.isEnemyLunging)
                         .modifier(ShakeEffect(active: state.isEnemyShaking))
                         .opacity(state.isEnemyFlashing ? 0.3 : 1)
 
-                    if let floating = state.floatingDamage {
+                    if let floating = state.floatingDamage, floating.onEnemy {
                         Text(floating.value)
-                            .font(.pixel(14))
-                            .foregroundStyle(skin.lightest)
-                            .offset(y: -14)
-                            .transition(.opacity)
+                            .font(.pixel(16))
+                            .foregroundStyle(Color(hex: "#c04000"))
+                            .shadow(color: skin.darkest, radius: 0, x: 1, y: 1)
+                            .offset(y: -18)
+                            .transition(.move(edge: .bottom).combined(with: .opacity))
                             .id(floating.id)
                     }
                 }
+                .frame(width: enemySprite + 8, height: enemySprite + 12)
             }
-            .padding(.horizontal, 6)
+            .padding(.horizontal, 8)
+            .padding(.top, 4)
 
             Rectangle().fill(skin.darkest).frame(height: 3)
 
-            HStack(alignment: .bottom) {
-                PokemonSpriteView(id: activePlayer.id, back: true, width: 116, height: 116)
-                    .opacity(activePlayer.isFainted ? 0.15 : 1)
-                    .saturation(activePlayer.isFainted ? 0 : 1)
-                    .modifier(ShakeEffect(active: state.isPlayerShaking))
-                    .opacity(state.isPlayerFlashing ? 0.3 : 1)
-                Spacer()
+            HStack(alignment: .bottom, spacing: 8) {
+                ZStack(alignment: .top) {
+                    PokemonSpriteView(id: activePlayer.id, back: true, width: playerSprite, height: playerSprite)
+                        .opacity(activePlayer.isFainted ? 0.15 : 1)
+                        .saturation(activePlayer.isFainted ? 0 : 1)
+                        .offset(x: state.isPlayerLunging ? 28 : 0, y: state.isPlayerLunging ? -10 : 0)
+                        .animation(.easeOut(duration: 0.18), value: state.isPlayerLunging)
+                        .modifier(ShakeEffect(active: state.isPlayerShaking))
+                        .opacity(state.isPlayerFlashing ? 0.3 : 1)
+
+                    if let floating = state.floatingDamage, !floating.onEnemy {
+                        Text(floating.value)
+                            .font(.pixel(16))
+                            .foregroundStyle(Color(hex: "#c04000"))
+                            .shadow(color: skin.darkest, radius: 0, x: 1, y: 1)
+                            .offset(y: -18)
+                            .transition(.move(edge: .bottom).combined(with: .opacity))
+                            .id(floating.id)
+                    }
+                }
+                .frame(width: playerSprite + 8, height: playerSprite + 12)
+
                 PlayerPanelView(pokemon: activePlayer, skin: skin)
+                    .frame(maxWidth: .infinity, alignment: .trailing)
             }
-            .padding(.horizontal, 6)
-            .padding(.bottom, 6)
+            .padding(.horizontal, 8)
+            .padding(.bottom, 8)
+
+            Spacer(minLength: 0)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(skin.medium)
@@ -91,24 +129,24 @@ struct BattleScreenView: View {
 
     private func teamTracker(_ state: BattleState) -> some View {
         HStack {
-            HStack(spacing: 4) {
-                Text("FOE").pixelText(6, skin.medium)
+            HStack(spacing: 5) {
+                Text("FOE").pixelText(7, skin.medium)
                 ForEach(state.enemyTeam.indices, id: \.self) { i in
                     PokeballDotView(fainted: state.enemyTeam[i].isFainted, active: i == state.activeEnemyIndex, skin: skin)
                 }
             }
             Spacer()
-            Text("TURN \(state.turn)").pixelText(6, skin.medium)
+            Text("TURN \(state.turn)").pixelText(8, skin.lightest)
             Spacer()
-            HStack(spacing: 4) {
+            HStack(spacing: 5) {
                 ForEach(state.playerTeam.indices, id: \.self) { i in
                     PokeballDotView(fainted: state.playerTeam[i].isFainted, active: i == state.activePlayerIndex, skin: skin)
                 }
-                Text("YOU").pixelText(6, skin.medium)
+                Text("YOU").pixelText(7, skin.medium)
             }
         }
-        .padding(.horizontal, 10)
-        .padding(.vertical, 4)
+        .padding(.horizontal, 12)
+        .padding(.vertical, 6)
         .background(skin.darkest)
     }
 
@@ -120,6 +158,7 @@ struct BattleScreenView: View {
         let color: Color = msg.contains("SUPER EFFECTIVE") ? Color(hex: "#c04000")
             : msg.contains("critical hit") ? Color(hex: "#c0a000")
             : msg.contains("fainted") ? Color(hex: "#c04000")
+            : msg.contains("damage") ? Color(hex: "#c04000")
             : msg.contains("not very effective") ? skin.dark
             : skin.darkest
 
@@ -132,8 +171,8 @@ struct BattleScreenView: View {
             }
         }
         .padding(.horizontal, 8)
-        .padding(.top, 5)
-        .padding(.bottom, 3)
+        .padding(.top, 6)
+        .padding(.bottom, 4)
         .background(skin.medium)
     }
 
@@ -146,41 +185,41 @@ struct BattleScreenView: View {
             } else if uiPhase == .menu || isBusy {
                 mainActions(isBusy: isBusy)
             } else if uiPhase == .moveSelect {
-                moveSelect(activePlayer)
+                moveSelect(activePlayer, isBusy: isBusy)
             } else if uiPhase == .switchPokemon {
                 switchPokemon(state)
             } else if uiPhase == .bagOpen {
-                bagOpen()
+                bagOpen(isBusy: isBusy)
             }
         }
-        .padding(8)
+        .padding(10)
         .frame(maxWidth: .infinity)
         .background(skin.lightest)
         .overlay(Rectangle().stroke(skin.darkest, lineWidth: 4))
         .padding(.horizontal, 8)
         .padding(.bottom, 8)
-        .padding(.top, 3)
+        .padding(.top, 4)
     }
 
     private var confirmRunView: some View {
-        VStack(spacing: 8) {
-            Text("REALLY RUN AWAY?").pixelText(9, Color(hex: "#c04000"))
+        VStack(spacing: 10) {
+            Text("REALLY RUN AWAY?").pixelText(10, Color(hex: "#c04000"))
             HStack(spacing: 8) {
                 Button("YES, RUN!") {
                     confirmRun = false
                     viewModel.runFromBattle()
                 }
-                .buttonStyle(RetroButtonStyle(skin: skin, fontSize: 9))
+                .buttonStyle(RetroButtonStyle(skin: skin, fontSize: 10))
 
                 Button("STAY") { confirmRun = false }
-                    .buttonStyle(RetroButtonStyle(skin: skin, fontSize: 9))
+                    .buttonStyle(RetroButtonStyle(skin: skin, fontSize: 10))
             }
         }
         .padding(.vertical, 4)
     }
 
     private func mainActions(isBusy: Bool) -> some View {
-        LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 6) {
+        LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 8) {
             actionButton("\u{2694} FIGHT", disabled: isBusy) { uiPhase = .moveSelect }
             actionButton("\u{1F392} BAG", disabled: isBusy) { uiPhase = .bagOpen }
             actionButton("\u{1F504} POKEMON", disabled: isBusy) { uiPhase = .switchPokemon }
@@ -190,21 +229,22 @@ struct BattleScreenView: View {
 
     private func actionButton(_ label: String, disabled: Bool, action: @escaping () -> Void) -> some View {
         Button(label, action: action)
-            .buttonStyle(RetroButtonStyle(skin: skin, fontSize: 9, isDisabled: disabled))
+            .buttonStyle(RetroButtonStyle(skin: skin, fontSize: 11, isDisabled: disabled))
             .disabled(disabled)
     }
 
-    private func moveSelect(_ activePlayer: BattlePokemon) -> some View {
-        VStack(spacing: 6) {
+    private func moveSelect(_ activePlayer: BattlePokemon, isBusy: Bool) -> some View {
+        VStack(spacing: 8) {
             HStack {
-                Text("\u{2694} CHOOSE MOVE").pixelText(8, skin.darkest)
+                Text("\u{2694} CHOOSE MOVE").pixelText(9, skin.darkest)
                 Spacer()
                 backButton { uiPhase = .menu }
+                    .disabled(isBusy)
             }
-            LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 5) {
+            LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 6) {
                 ForEach(Array(activePlayer.moves.enumerated()), id: \.offset) { index, move in
-                    MoveButtonView(move: move, skin: skin) {
-                        guard move.currentPP > 0 else { return }
+                    MoveButtonView(move: move, skin: skin, disabled: isBusy || move.currentPP == 0) {
+                        guard !isBusy, move.currentPP > 0 else { return }
                         viewModel.playerAttack(index)
                         uiPhase = .menu
                     }
@@ -215,17 +255,18 @@ struct BattleScreenView: View {
 
     private func switchPokemon(_ state: BattleState) -> some View {
         let forcedSwitch = state.playerTeam[state.activePlayerIndex].isFainted
-        return VStack(spacing: 6) {
+        let isBusy = state.phase == .animating || state.phase == .enemyTurn || state.phase == .battleEnd
+        return VStack(spacing: 8) {
             HStack {
-                Text("\u{1F504} YOUR TEAM").pixelText(8, skin.darkest)
+                Text("\u{1F504} YOUR TEAM").pixelText(9, skin.darkest)
                 Spacer()
-                if !forcedSwitch { backButton { uiPhase = .menu } }
+                if !forcedSwitch { backButton { uiPhase = .menu }.disabled(isBusy) }
             }
-            VStack(spacing: 4) {
+            VStack(spacing: 5) {
                 ForEach(state.playerTeam.indices, id: \.self) { index in
                     let p = state.playerTeam[index]
                     let isCurrent = index == state.activePlayerIndex
-                    let disabled = p.isFainted || isCurrent
+                    let disabled = p.isFainted || isCurrent || (isBusy && !forcedSwitch)
                     Button {
                         guard !disabled else { return }
                         viewModel.playerSwitch(index)
@@ -235,12 +276,12 @@ struct BattleScreenView: View {
                             Text((isCurrent ? "\u{25B6} " : "") + p.name.uppercased() + (p.isFainted ? " [FNT]" : ""))
                                 .strikethrough(p.isFainted)
                             Spacer()
-                            Text("\(p.currentHP)/\(p.maxHP)").font(.pixel(7))
+                            Text("\(p.currentHP)/\(p.maxHP)").font(.pixel(8))
                         }
-                        .font(.pixel(8))
+                        .font(.pixel(9))
                         .foregroundStyle(isCurrent ? skin.lightest : (p.isFainted ? skin.dark : skin.darkest))
-                        .padding(.horizontal, 8)
-                        .padding(.vertical, 6)
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 8)
                         .background(isCurrent ? skin.dark : (p.isFainted ? skin.medium : skin.lightest))
                         .overlay(Rectangle().stroke(skin.darkest, lineWidth: 3))
                         .opacity(p.isFainted ? 0.45 : 1)
@@ -250,42 +291,44 @@ struct BattleScreenView: View {
                 }
             }
             if forcedSwitch {
-                Text("CHOOSE NEXT POKEMON!").pixelText(8, Color(hex: "#c04000"))
+                Text("CHOOSE NEXT POKEMON!").pixelText(9, Color(hex: "#c04000"))
             }
         }
     }
 
-    private func bagOpen() -> some View {
+    private func bagOpen(isBusy: Bool) -> some View {
         let items = viewModel.trainerData.items
         let available = items.filter { $0.count > 0 }
-        return VStack(spacing: 6) {
+        return VStack(spacing: 8) {
             HStack {
-                Text("\u{1F392} BAG").pixelText(8, skin.darkest)
+                Text("\u{1F392} BAG").pixelText(9, skin.darkest)
                 Spacer()
-                backButton { uiPhase = .menu }
+                backButton { uiPhase = .menu }.disabled(isBusy)
             }
             if available.isEmpty {
-                Text("BAG IS EMPTY").pixelText(9, skin.dark).padding(10)
+                Text("BAG IS EMPTY").pixelText(10, skin.dark).padding(12)
             } else {
-                VStack(spacing: 4) {
+                VStack(spacing: 5) {
                     ForEach(Array(items.enumerated()), id: \.offset) { index, item in
                         if item.count > 0 {
                             Button {
+                                guard !isBusy else { return }
                                 viewModel.useItem(item, at: index)
                                 uiPhase = .menu
                             } label: {
-                                VStack(alignment: .leading, spacing: 2) {
-                                    Text("\(item.name.uppercased()) \u{00D7}\(item.count)").font(.pixel(8))
-                                    Text(item.description).font(.pixel(6)).foregroundStyle(skin.dark)
+                                VStack(alignment: .leading, spacing: 3) {
+                                    Text("\(item.name.uppercased()) \u{00D7}\(item.count)").font(.pixel(9))
+                                    Text(item.description).font(.pixel(7)).foregroundStyle(skin.dark)
                                 }
                                 .foregroundStyle(skin.darkest)
                                 .frame(maxWidth: .infinity, alignment: .leading)
-                                .padding(.horizontal, 8)
-                                .padding(.vertical, 7)
+                                .padding(.horizontal, 10)
+                                .padding(.vertical, 8)
                                 .background(skin.lightest)
                                 .overlay(Rectangle().stroke(skin.darkest, lineWidth: 3))
                             }
                             .buttonStyle(.plain)
+                            .disabled(isBusy)
                         }
                     }
                 }
@@ -295,10 +338,10 @@ struct BattleScreenView: View {
 
     private func backButton(action: @escaping () -> Void) -> some View {
         Button("\u{25C0} BACK", action: action)
-            .font(.pixel(8))
+            .font(.pixel(9))
             .foregroundStyle(skin.darkest)
-            .padding(.horizontal, 10)
-            .padding(.vertical, 4)
+            .padding(.horizontal, 12)
+            .padding(.vertical, 6)
             .background(skin.medium)
             .overlay(Rectangle().stroke(skin.darkest, lineWidth: 2))
             .buttonStyle(.plain)
@@ -312,28 +355,27 @@ private struct EnemyPanelView: View {
     var skin: SkinColors
 
     var body: some View {
-        let hpPercent = pokemon.maxHP > 0 ? max(0, Double(pokemon.currentHP) / Double(pokemon.maxHP)) : 0
-        VStack(alignment: .leading, spacing: 2) {
+        VStack(alignment: .leading, spacing: 4) {
             HStack {
-                Text(pokemon.name.uppercased()).pixelText(9, skin.darkest)
-                Spacer()
-                Text("Lv\(pokemon.level)").pixelText(7, skin.dark)
+                Text(pokemon.name.uppercased()).pixelText(11, skin.darkest)
+                Spacer(minLength: 4)
+                Text("Lv\(pokemon.level)").pixelText(8, skin.dark)
             }
-            HStack(spacing: 3) {
+            HStack(spacing: 4) {
                 ForEach(pokemon.types, id: \.self) { TypeBadgeView(type: $0) }
                 if let status = pokemon.status { StatusBadgeView(status: status) }
             }
-            HStack(spacing: 4) {
-                Text("HP").font(.pixel(6)).foregroundStyle(skin.dark)
+            HStack(spacing: 6) {
+                Text("HP").font(.pixel(7)).foregroundStyle(skin.dark)
                 HPBarView(current: pokemon.currentHP, max: pokemon.maxHP, compact: true, skin: skin)
             }
-            Text(pokemon.isFainted ? "FAINTED" : "\(Int((hpPercent * 100).rounded()))%")
-                .pixelText(7, skin.dark)
+            Text(pokemon.isFainted ? "FAINTED" : "\(pokemon.currentHP) / \(pokemon.maxHP)")
+                .pixelText(9, pokemon.isFainted ? Color(hex: "#c04000") : skin.darkest)
                 .frame(maxWidth: .infinity, alignment: .trailing)
         }
-        .padding(.horizontal, 8)
-        .padding(.vertical, 5)
-        .frame(minWidth: 160)
+        .padding(.horizontal, 10)
+        .padding(.vertical, 8)
+        .frame(minWidth: 150)
         .background(skin.lightest)
         .overlay(Rectangle().stroke(skin.darkest, lineWidth: 4))
     }
@@ -344,25 +386,26 @@ private struct PlayerPanelView: View {
     var skin: SkinColors
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 2) {
+        VStack(alignment: .leading, spacing: 4) {
             HStack {
-                Text(pokemon.name.uppercased()).pixelText(9, skin.darkest)
-                Spacer()
-                Text("Lv\(pokemon.level)").pixelText(7, skin.dark)
+                Text(pokemon.name.uppercased()).pixelText(11, skin.darkest)
+                Spacer(minLength: 4)
+                Text("Lv\(pokemon.level)").pixelText(8, skin.dark)
             }
-            HStack(spacing: 3) {
+            HStack(spacing: 4) {
                 ForEach(pokemon.types, id: \.self) { TypeBadgeView(type: $0) }
                 if let status = pokemon.status { StatusBadgeView(status: status) }
             }
-            HStack(spacing: 4) {
-                Text("HP").font(.pixel(6)).foregroundStyle(skin.dark)
+            HStack(spacing: 6) {
+                Text("HP").font(.pixel(7)).foregroundStyle(skin.dark)
                 HPBarView(current: pokemon.currentHP, max: pokemon.maxHP, skin: skin)
             }
-            Text("\(pokemon.currentHP) / \(pokemon.maxHP)").pixelText(8, skin.darkest)
+            Text("\(pokemon.currentHP) / \(pokemon.maxHP)").pixelText(10, skin.darkest)
+                .frame(maxWidth: .infinity, alignment: .trailing)
         }
-        .padding(.horizontal, 8)
-        .padding(.vertical, 5)
-        .frame(minWidth: 180)
+        .padding(.horizontal, 10)
+        .padding(.vertical, 8)
+        .frame(minWidth: 160)
         .background(skin.lightest)
         .overlay(Rectangle().stroke(skin.darkest, lineWidth: 4))
     }
@@ -371,30 +414,32 @@ private struct PlayerPanelView: View {
 private struct MoveButtonView: View {
     var move: Move
     var skin: SkinColors
+    var disabled: Bool = false
     var action: () -> Void
 
     var body: some View {
         let outOfPP = move.currentPP == 0
+        let inactive = disabled || outOfPP
         Button(action: action) {
-            VStack(alignment: .leading, spacing: 3) {
-                Text(move.name.uppercased()).font(.pixel(7))
+            VStack(alignment: .leading, spacing: 4) {
+                Text(move.name.uppercased()).font(.pixel(8))
                 HStack {
                     TypeBadgeView(type: move.type)
                     Spacer()
-                    Text(move.power > 0 ? "PWR:\(move.power)" : "STATUS").font(.pixel(6))
+                    Text(move.power > 0 ? "PWR:\(move.power)" : "STATUS").font(.pixel(7))
                 }
-                Text("PP: \(move.currentPP)/\(move.maxPP) | \(move.accuracy)%").font(.pixel(6))
+                Text("PP: \(move.currentPP)/\(move.maxPP) | \(move.accuracy)%").font(.pixel(7))
             }
-            .foregroundStyle(outOfPP ? skin.dark : skin.darkest)
+            .foregroundStyle(inactive ? skin.dark : skin.darkest)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(.horizontal, 5)
-            .padding(.vertical, 7)
-            .background(outOfPP ? skin.medium : skin.lightest)
+            .padding(.horizontal, 7)
+            .padding(.vertical, 9)
+            .background(inactive ? skin.medium : skin.lightest)
             .overlay(Rectangle().stroke(skin.darkest, lineWidth: 3))
-            .opacity(outOfPP ? 0.55 : 1)
+            .opacity(inactive ? 0.55 : 1)
         }
         .buttonStyle(.plain)
-        .disabled(outOfPP)
+        .disabled(inactive)
     }
 }
 
@@ -406,7 +451,7 @@ private struct PokeballDotView: View {
     var body: some View {
         Circle()
             .fill(fainted ? skin.dark.opacity(0.5) : (active ? skin.accent : skin.darkest))
-            .frame(width: 10, height: 10)
+            .frame(width: 12, height: 12)
             .overlay(Circle().stroke(skin.darkest, lineWidth: 1))
     }
 }

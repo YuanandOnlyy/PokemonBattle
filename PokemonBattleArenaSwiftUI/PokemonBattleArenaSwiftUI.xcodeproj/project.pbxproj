@@ -6,6 +6,10 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		A1SUPABASEBUILDFILE01 /* Supabase in Frameworks */ = {isa = PBXBuildFile; productRef = A1SUPABASEPRODUCT01 /* Supabase */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
 		8398F75C304EA57E00A13863 /* PokemonBattleArenaSwiftUI.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = PokemonBattleArenaSwiftUI.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -36,6 +40,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A1SUPABASEBUILDFILE01 /* Supabase in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -78,6 +83,7 @@
 			);
 			name = PokemonBattleArenaSwiftUI;
 			packageProductDependencies = (
+				A1SUPABASEPRODUCT01 /* Supabase */,
 			);
 			productName = PokemonBattleArenaSwiftUI;
 			productReference = 8398F75C304EA57E00A13863 /* PokemonBattleArenaSwiftUI.app */;
@@ -107,6 +113,9 @@
 			);
 			mainGroup = 8398F753304EA57E00A13863;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				A1SUPABASEPACKAGEREF /* XCRemoteSwiftPackageReference "supabase-swift" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 8398F75D304EA57E00A13863 /* Products */;
 			projectDirPath = "";
@@ -345,6 +354,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		A1SUPABASEPACKAGEREF /* XCRemoteSwiftPackageReference "supabase-swift" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/supabase/supabase-swift";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.5.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		A1SUPABASEPRODUCT01 /* Supabase */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = A1SUPABASEPACKAGEREF /* XCRemoteSwiftPackageReference "supabase-swift" */;
+			productName = Supabase;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 8398F754304EA57E00A13863 /* Project object */;
 }

@@ -14,6 +14,8 @@ struct DamageResult: Hashable {
 struct FloatingDamage: Identifiable, Hashable {
     var value: String
     var id: Int
+    /// `true` = float above the enemy sprite; `false` = above the player sprite.
+    var onEnemy: Bool
 }
 
 /// One player Pokemon's XP award at the end of a battle. `xpGained` is a plain
@@ -48,6 +50,10 @@ struct BattleState {
     var isPlayerFlashing: Bool
     var isEnemyFlashing: Bool
     var isScreenShaking: Bool
+    /// Player sprite lunges forward during an attack.
+    var isPlayerLunging: Bool
+    /// Enemy sprite lunges forward during an attack.
+    var isEnemyLunging: Bool
     var floatingDamage: FloatingDamage?
     var xpGained: [XPEntry]
     var levelUps: [String]

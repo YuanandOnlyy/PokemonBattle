@@ -29,13 +29,15 @@ struct TrainerData: Codable, Hashable {
     var consecutiveDefeats: Int
     var dailyQuests: [DailyQuest]
     var dailyQuestDate: String
+    /// PokeAPI ids of the last team used in battle (up to 3). Powers Title → CONTINUE.
+    var lastTeamIDs: [Int]
 
     init(
         name: String, level: Int, xp: Int, xpToNext: Int, wins: Int, losses: Int, streak: Int,
         bestStreak: Int, totalBattles: Int, totalDamageDealt: Int, totalCritHits: Int,
         totalSuperEffective: Int, favoritePokemons: [String: Int], battleHistory: [BattleRecord],
         achievements: [Achievement], items: [Item], settings: GameSettings, consecutiveDefeats: Int,
-        dailyQuests: [DailyQuest], dailyQuestDate: String
+        dailyQuests: [DailyQuest], dailyQuestDate: String, lastTeamIDs: [Int] = []
     ) {
         self.name = name
         self.level = level
@@ -57,12 +59,13 @@ struct TrainerData: Codable, Hashable {
         self.consecutiveDefeats = consecutiveDefeats
         self.dailyQuests = dailyQuests
         self.dailyQuestDate = dailyQuestDate
+        self.lastTeamIDs = lastTeamIDs
     }
 
     enum CodingKeys: String, CodingKey {
         case name, level, xp, xpToNext, wins, losses, streak, bestStreak, totalBattles,
              totalDamageDealt, totalCritHits, totalSuperEffective, favoritePokemons, battleHistory,
-             achievements, items, settings, consecutiveDefeats, dailyQuests, dailyQuestDate
+             achievements, items, settings, consecutiveDefeats, dailyQuests, dailyQuestDate, lastTeamIDs
     }
 
     init(from decoder: Decoder) throws {
@@ -88,6 +91,7 @@ struct TrainerData: Codable, Hashable {
         consecutiveDefeats = try container.decodeIfPresent(Int.self, forKey: .consecutiveDefeats) ?? fallback.consecutiveDefeats
         dailyQuests = try container.decodeIfPresent([DailyQuest].self, forKey: .dailyQuests) ?? fallback.dailyQuests
         dailyQuestDate = try container.decodeIfPresent(String.self, forKey: .dailyQuestDate) ?? fallback.dailyQuestDate
+        lastTeamIDs = try container.decodeIfPresent([Int].self, forKey: .lastTeamIDs) ?? fallback.lastTeamIDs
 
         // Achievement defs (name/description/target) always come from the current build's list;
         // only progress/unlocked/unlockedDate carry over from the save. Matches the `achievements.map`

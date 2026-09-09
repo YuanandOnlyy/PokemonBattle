@@ -48,7 +48,7 @@ struct DialogBoxView: View {
             .font(.pixel(10))
             .foregroundStyle(textColor)
             .lineSpacing(6)
-            .frame(maxWidth: .infinity, minHeight: 48, alignment: .topLeading)
+            .frame(maxWidth: .infinity, minHeight: 56, alignment: .topLeading)
             .padding(.horizontal, 10)
             .padding(.vertical, 7)
             .background(skin.lightest)

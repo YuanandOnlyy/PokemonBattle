@@ -82,7 +82,7 @@ struct DefeatScreenView: View {
                 VStack(spacing: 8) {
                     Button("\u{2694} TRY AGAIN") {
                         viewModel.acknowledgeBattleEnd()
-                        viewModel.navigate(.teamBuilder)
+                        viewModel.openTeamBuilder(continueLast: true)
                     }
                     .buttonStyle(RetroButtonStyle(skin: skin, fontSize: 11))
 

@@ -5,6 +5,7 @@ import SwiftUI
 struct SettingsView: View {
     var viewModel: GameViewModel
     @State private var confirmReset = false
+    @State private var cloudStatus = "Checking cloud sync..."
 
     private static let skinPreviews: [ConsoleSkin: (emoji: String, desc: String)] = [
         .dmg: ("\u{1F7E2}", "Original 1989 green palette"),
@@ -24,14 +25,18 @@ struct SettingsView: View {
                     consoleSkinCard.staggerAppear(1)
                     audioDisplayCard.staggerAppear(2)
                     animSpeedCard.staggerAppear(3)
-                    aboutCard.staggerAppear(4)
-                    dangerZoneCard.staggerAppear(5)
+                    cloudSyncCard.staggerAppear(4)
+                    aboutCard.staggerAppear(5)
+                    dangerZoneCard.staggerAppear(6)
                 }
                 .padding(10)
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
         .background(skin.medium)
+        .task {
+            cloudStatus = await SupabaseService.probeConnection()
+        }
     }
 
     private var header: some View {
@@ -172,6 +177,24 @@ struct SettingsView: View {
         .background(isSelected ? skin.darkest : skin.medium)
         .overlay(Rectangle().stroke(skin.darkest, lineWidth: 3))
         .buttonStyle(.plain)
+    }
+
+    private var cloudSyncCard: some View {
+        sectionCard(title: "\u{2601} CLOUD SYNC") {
+            VStack(alignment: .leading, spacing: 8) {
+                Text(cloudStatus.uppercased())
+                    .font(.pixel(7))
+                    .foregroundStyle(skin.darkest)
+                    .fixedSize(horizontal: false, vertical: true)
+                Text("LOCAL SAVE ALWAYS WORKS OFFLINE. CLOUD NEEDS ANON AUTH + TRAINERS TABLE.")
+                    .pixelText(6, skin.dark)
+                    .fixedSize(horizontal: false, vertical: true)
+                Button("RECHECK") {
+                    Task { cloudStatus = await SupabaseService.probeConnection() }
+                }
+                .buttonStyle(RetroButtonStyle(skin: skin, fontSize: 8))
+            }
+        }
     }
 
     private var aboutCard: some View {

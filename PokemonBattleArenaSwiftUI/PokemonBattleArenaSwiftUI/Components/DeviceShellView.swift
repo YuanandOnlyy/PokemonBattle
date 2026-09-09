@@ -15,30 +15,37 @@ struct DeviceShellView<Content: View>: View {
     private let devLED = Color(hex: "#00e000")
 
     var body: some View {
-        VStack(spacing: 0) {
-            topChrome
-            screenZone
-            bottomChrome
-        }
-        .background(devBody)
-        .clipShape(
-            UnevenRoundedRectangle(
-                topLeadingRadius: 12, bottomLeadingRadius: 40,
-                bottomTrailingRadius: 40, topTrailingRadius: 12
+        GeometryReader { geo in
+            let compact = geo.size.height < 720
+            let outerPad: CGFloat = compact ? 6 : 10
+
+            VStack(spacing: 0) {
+                topChrome(compact: compact)
+                screenZone
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                bottomChrome(compact: compact)
+            }
+            .background(devBody)
+            .clipShape(
+                UnevenRoundedRectangle(
+                    topLeadingRadius: 12, bottomLeadingRadius: compact ? 28 : 40,
+                    bottomTrailingRadius: compact ? 28 : 40, topTrailingRadius: 12
+                )
             )
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 12)
-                .stroke(Color(hex: "#2a2a3a"), lineWidth: 3)
-        )
-        .shadow(color: .black.opacity(0.8), radius: 30, y: 20)
-        .padding()
+            .overlay(
+                RoundedRectangle(cornerRadius: 12)
+                    .stroke(Color(hex: "#2a2a3a"), lineWidth: 3)
+            )
+            .shadow(color: .black.opacity(0.8), radius: compact ? 16 : 30, y: compact ? 10 : 20)
+            .padding(outerPad)
+            .frame(width: geo.size.width, height: geo.size.height)
+        }
     }
 
-    private var topChrome: some View {
+    private func topChrome(compact: Bool) -> some View {
         HStack {
             Text("Game Boy")
-                .font(.pixel(8))
+                .font(.pixel(compact ? 7 : 8))
                 .foregroundStyle(Color(hex: "#5060a0"))
                 .tracking(2)
             Spacer()
@@ -52,9 +59,9 @@ struct DeviceShellView<Content: View>: View {
                     .foregroundStyle(Color(hex: "#404060"))
             }
         }
-        .padding(.horizontal, 14)
-        .padding(.top, 8)
-        .padding(.bottom, 6)
+        .padding(.horizontal, 12)
+        .padding(.top, compact ? 6 : 8)
+        .padding(.bottom, compact ? 4 : 6)
         .background(
             LinearGradient(colors: [Color(hex: "#26263a"), Color(hex: "#1c1c28")], startPoint: .top, endPoint: .bottom)
         )
@@ -65,28 +72,31 @@ struct DeviceShellView<Content: View>: View {
         ZStack {
             content()
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(SkinColors.dmg.medium)
         .clipShape(RoundedRectangle(cornerRadius: 4))
         .overlay(RoundedRectangle(cornerRadius: 4).stroke(Color(hex: "#060610"), lineWidth: 3))
         .overlay(
-            // CRT vignette
-            RadialGradient(colors: [.clear, .black.opacity(0.4)], center: .center, startRadius: 120, endRadius: 260)
+            RadialGradient(colors: [.clear, .black.opacity(0.28)], center: .center, startRadius: 120, endRadius: 280)
                 .allowsHitTesting(false)
         )
-        .padding(14)
-        .padding(.vertical, -4)
+        .padding(.horizontal, 10)
+        .padding(.vertical, 6)
         .background(devScreenBezel)
     }
 
-    private var bottomChrome: some View {
-        HStack(alignment: .center, spacing: 8) {
+    private func bottomChrome(compact: Bool) -> some View {
+        let scale: CGFloat = compact ? 0.88 : 1
+        return HStack(alignment: .center, spacing: compact ? 6 : 8) {
             dPad
             centerControls
             abButtons
         }
-        .padding(.horizontal, 14)
-        .padding(.top, 12)
-        .padding(.bottom, 18)
+        .scaleEffect(scale, anchor: .center)
+        .padding(.horizontal, 12)
+        .padding(.top, compact ? 8 : 12)
+        .padding(.bottom, compact ? 10 : 16)
+        .frame(maxWidth: .infinity)
         .background(
             LinearGradient(colors: [Color(hex: "#1c1c28"), Color(hex: "#161620")], startPoint: .top, endPoint: .bottom)
         )

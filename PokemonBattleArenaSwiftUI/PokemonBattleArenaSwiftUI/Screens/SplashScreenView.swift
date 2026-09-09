@@ -93,14 +93,14 @@ struct SplashScreenView: View {
                 .opacity(logoOpacity)
 
             Text("POKEMON")
-                .font(.pixel(30))
+                .font(.pixel(32))
                 .foregroundStyle(skin.lightest)
                 .tracking(2)
                 .shadow(color: skin.darkest, radius: 0, x: 3, y: 3)
                 .shadow(color: skin.accent.opacity(glowPulse ? 0.9 : 0.35), radius: glowPulse ? 14 : 4)
 
             Text("BATTLE ARENA")
-                .font(.pixel(13))
+                .font(.pixel(14))
                 .foregroundStyle(skin.accent)
                 .tracking(3)
                 .shadow(color: skin.darkest, radius: 0, x: 2, y: 2)

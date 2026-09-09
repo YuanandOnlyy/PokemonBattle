@@ -13,12 +13,15 @@ import SwiftUI
 @Observable
 final class GameViewModel {
     private static let storageKey = "pokemon-battle-arena-v1"
+    private static let fileName = "trainer-save.json"
 
     var currentScreen: Screen = .title
     var trainerData: TrainerData
     var battleState: BattleState?
     var battleResult: BattleResult?
     var selectedPokedexPokemon: Pokemon?
+    /// When true, Team Builder prefills the last used team (Title → CONTINUE).
+    var prefillLastTeam = false
 
     init() {
         trainerData = Self.loadTrainer()
@@ -42,6 +45,11 @@ final class GameViewModel {
         withAnimation(.easeInOut(duration: 0.28)) {
             currentScreen = screen
         }
+    }
+
+    func openTeamBuilder(continueLast: Bool) {
+        prefillLastTeam = continueLast
+        navigate(.teamBuilder)
     }
 
     /// Mirrors `updateTrainer(partial)` in GameContext.tsx: mutate the trainer save in place, then
@@ -71,16 +79,36 @@ final class GameViewModel {
     private func saveTrainer() {
         guard let data = try? JSONEncoder().encode(trainerData) else { return }
         UserDefaults.standard.set(data, forKey: Self.storageKey)
+        // Secondary durable copy in Documents (survives some UserDefaults wipes / testing).
+        if let url = Self.documentsSaveURL {
+            try? data.write(to: url, options: [.atomic])
+        }
         Task { await SupabaseService.saveTrainer(trainerData) }
     }
 
     private static var hasLocalSave: Bool {
-        UserDefaults.standard.data(forKey: storageKey) != nil
+        if UserDefaults.standard.data(forKey: storageKey) != nil { return true }
+        if let url = documentsSaveURL, FileManager.default.fileExists(atPath: url.path) { return true }
+        return false
+    }
+
+    private static var documentsSaveURL: URL? {
+        FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first?
+            .appendingPathComponent(fileName)
     }
 
     private static func loadTrainer() -> TrainerData {
-        guard let data = UserDefaults.standard.data(forKey: storageKey) else { return GameData.initialTrainer }
-        return (try? JSONDecoder().decode(TrainerData.self, from: data)) ?? GameData.initialTrainer
+        if let data = UserDefaults.standard.data(forKey: storageKey),
+           let decoded = try? JSONDecoder().decode(TrainerData.self, from: data) {
+            return decoded
+        }
+        if let url = documentsSaveURL,
+           let data = try? Data(contentsOf: url),
+           let decoded = try? JSONDecoder().decode(TrainerData.self, from: data) {
+            UserDefaults.standard.set(data, forKey: storageKey)
+            return decoded
+        }
+        return GameData.initialTrainer
     }
 
     private static func todayString() -> String {
@@ -128,16 +156,48 @@ final class GameViewModel {
         }
     }
 
-    /// Mirrors `showFloatingDamage` in GameContext.tsx.
-    private func showFloatingDamage(_ value: String) {
+    /// Mirrors `showFloatingDamage` in GameContext.tsx. `onEnemy` places the number over the foe
+    /// (player attacking) or the player sprite (enemy attacking).
+    private func showFloatingDamage(_ value: String, onEnemy: Bool) {
         let id = Int(Date().timeIntervalSince1970 * 1000)
-        battleState?.floatingDamage = FloatingDamage(value: value, id: id)
+        battleState?.floatingDamage = FloatingDamage(value: value, id: id, onEnemy: onEnemy)
         Task { [weak self] in
             try? await Task.sleep(nanoseconds: 1_100_000_000)
             if self?.battleState?.floatingDamage?.id == id {
                 self?.battleState?.floatingDamage = nil
             }
         }
+    }
+
+    /// Brief forward lunge so attacks read as contact, not just a shake on the target.
+    private func playAttackLunge(isPlayer: Bool) async {
+        guard trainerData.settings.animations, !trainerData.settings.reducedMotion else { return }
+        if isPlayer {
+            battleState?.isPlayerLunging = true
+        } else {
+            battleState?.isEnemyLunging = true
+        }
+        try? await Task.sleep(nanoseconds: 280_000_000)
+        if isPlayer {
+            battleState?.isPlayerLunging = false
+        } else {
+            battleState?.isEnemyLunging = false
+        }
+    }
+
+    /// True while an attack/item/switch/run sequence owns the turn — blocks duplicate input.
+    private var isActionLocked: Bool {
+        guard let phase = battleState?.phase else { return true }
+        switch phase {
+        case .animating, .enemyTurn, .battleEnd, .showResult:
+            return true
+        case .menu, .moveSelect, .switchPokemon, .bagOpen:
+            return false
+        }
+    }
+
+    private func beginActionLock() {
+        battleState?.phase = .animating
     }
 
     // MARK: - Starting & ending a battle
@@ -164,9 +224,11 @@ final class GameViewModel {
             damageByPokemon: damageByPokemon,
             isPlayerShaking: false, isEnemyShaking: false,
             isPlayerFlashing: false, isEnemyFlashing: false, isScreenShaking: false,
+            isPlayerLunging: false, isEnemyLunging: false,
             floatingDamage: nil, xpGained: [], levelUps: []
         )
         battleResult = nil
+        trainerData.lastTeamIDs = playerTeam.map(\.id)
         navigate(.battle)
 
         var usageCounts = trainerData.favoritePokemons
@@ -186,6 +248,8 @@ final class GameViewModel {
     /// advances daily quests and achievements, saves, then hands off to Victory/Defeat.
     private func endBattle(won: Bool) async {
         guard let state = battleState else { return }
+        guard state.phase != .battleEnd else { return }
+        battleState?.phase = .battleEnd
         let duration = max(0, Int(Date().timeIntervalSince(state.startTime)))
 
         let levelUps: [String] = [] // The original app never populates level-ups; ported as-is.
@@ -208,8 +272,6 @@ final class GameViewModel {
             xpGained: xpGained.reduce(0) { $0 + $1.amount }, duration: duration,
             damageDealt: state.totalDamageDealt, critHits: state.totalCritHits
         )
-
-        let prevTotalSuperEffective = trainerData.totalSuperEffective
 
         trainerData.totalBattles += 1
         trainerData.totalDamageDealt += state.totalDamageDealt
@@ -252,7 +314,7 @@ final class GameViewModel {
                 case .winBattle where won: q.progress += 1
                 case .landCrits: q.progress = min(q.target, q.progress + state.totalCritHits)
                 case .useItem: q.progress = min(q.target, q.progress + state.itemsUsed)
-                case .superEffective: q.progress = min(q.target, prevTotalSuperEffective + state.totalSuperEffective)
+                case .superEffective: q.progress = min(q.target, q.progress + state.totalSuperEffective)
                 default: break
                 }
                 let completed = q.progress >= q.target
@@ -295,7 +357,6 @@ final class GameViewModel {
 
         battleResult = BattleResult(won: won, xpGained: xpGained, levelUps: levelUps,
                                      enemyDefeated: enemyDefeated, mvpPokemon: mvpPokemon, tip: tip)
-        battleState?.phase = .battleEnd
         battleState?.xpGained = xpGained
         battleState?.levelUps = levelUps
 
@@ -308,13 +369,16 @@ final class GameViewModel {
     /// Mirrors `playerAttack` in GameContext.tsx. The pre-check below intentionally discards its
     /// status roll (mirroring the original's `processStatusDamage({ ...player })` throwaway copy) —
     /// the persisted status tick happens later in `executePlayerStatusTurn`, once per round.
+    /// Phase is locked to `.animating` immediately so rapid taps cannot queue duplicate attacks.
     func playerAttack(_ moveIndex: Int) {
         guard let state = battleState, state.phase == .menu || state.phase == .moveSelect else { return }
+        guard !isActionLocked else { return }
+        beginActionLock()
+
         var scratch = state.playerTeam[state.activePlayerIndex]
         let statusResult = BattleEngine.processStatusDamage(&scratch)
 
         if statusResult.shouldSkip {
-            battleState?.phase = .animating
             Task {
                 await processMessages([statusResult.message])
                 await executeEnemyTurn()
@@ -327,9 +391,13 @@ final class GameViewModel {
 
     private func executePlayerMove(_ moveIndex: Int) async {
         guard var state = battleState else { return }
+        guard state.phase != .battleEnd else { return }
         let playerIdx = state.activePlayerIndex
         var player = state.playerTeam[playerIdx]
-        guard moveIndex < player.moves.count else { return }
+        guard moveIndex < player.moves.count else {
+            battleState?.phase = .menu
+            return
+        }
         player.moves[moveIndex].currentPP = max(0, player.moves[moveIndex].currentPP - 1)
         state.playerTeam[playerIdx] = player
         state.phase = .animating
@@ -339,6 +407,8 @@ final class GameViewModel {
         var enemy = state.enemyTeam[enemyIdx]
         let move = player.moves[moveIndex]
         var messages = ["\(player.name) used \(move.name)!"]
+
+        await playAttackLunge(isPlayer: true)
 
         let hits = Double.random(in: 0..<100) < Double(move.accuracy)
         guard hits else {
@@ -373,6 +443,7 @@ final class GameViewModel {
             if result.effectiveness == 0 {
                 messages.append(result.message.isEmpty ? "It doesn't affect \(enemy.name)..." : result.message)
             } else {
+                let previousHP = enemy.currentHP
                 enemy.currentHP = max(0, enemy.currentHP - result.damage)
                 if enemy.currentHP == 0 { enemy.isFainted = true }
                 state.enemyTeam[enemyIdx] = enemy
@@ -383,6 +454,7 @@ final class GameViewModel {
 
                 if let triggered = result.abilityTriggered { messages.append(triggered) }
                 if !result.message.isEmpty { messages.append(result.message) }
+                messages.append("\(enemy.name) took \(result.damage) damage! (\(previousHP)→\(enemy.currentHP))")
 
                 if BattleEngine.checkStaticTrigger(defender: enemy, move: move) && player.status == nil {
                     let statusMsg = BattleEngine.applyStatusEffect(&player, .paralysis)
@@ -395,14 +467,14 @@ final class GameViewModel {
                 triggerAnimation(\.isEnemyFlashing, duration: 0.6)
                 if result.isCrit { triggerAnimation(\.isScreenShaking, duration: 0.5) }
                 if result.effectiveness >= 2 { triggerAnimation(\.isScreenShaking, duration: 0.3) }
-                showFloatingDamage("-\(result.damage)")
+                showFloatingDamage("-\(result.damage)", onEnemy: true)
             }
         }
 
         battleState = state
         await processMessages(messages)
 
-        guard let latest = battleState else { return }
+        guard let latest = battleState, latest.phase != .battleEnd else { return }
         let currentEnemy = latest.enemyTeam[latest.activeEnemyIndex]
         if currentEnemy.isFainted {
             await processMessages(["\(currentEnemy.name) fainted!"])
@@ -414,6 +486,7 @@ final class GameViewModel {
                 battleState = s
                 await processMessages(["Opponent sent out \(nextEnemy.name)!"])
                 if var s2 = battleState {
+                    s2.turn += 1
                     s2.phase = .menu
                     s2.displayedMessage = "What will \(s2.playerTeam[s2.activePlayerIndex].name) do?"
                     battleState = s2
@@ -428,11 +501,24 @@ final class GameViewModel {
 
     private func executeEnemyTurn() async {
         guard var state = battleState else { return }
+        guard state.phase != .battleEnd else { return }
         let enemyIdx = state.activeEnemyIndex
         let playerIdx = state.activePlayerIndex
         var enemy = state.enemyTeam[enemyIdx]
         let player = state.playerTeam[playerIdx]
-        guard !enemy.isFainted, !player.isFainted else { return }
+        guard !enemy.isFainted, !player.isFainted else {
+            if player.isFainted {
+                let anyAlive = state.playerTeam.contains { !$0.isFainted }
+                if !anyAlive {
+                    await endBattle(won: false)
+                } else {
+                    battleState?.phase = .switchPokemon
+                }
+            } else if enemy.isFainted {
+                await endBattle(won: true)
+            }
+            return
+        }
 
         var messages: [String] = []
         let statusResult = BattleEngine.processStatusDamage(&enemy)
@@ -440,11 +526,27 @@ final class GameViewModel {
         if statusResult.damage > 0 {
             enemy.currentHP = max(0, enemy.currentHP - statusResult.damage)
             if enemy.currentHP == 0 { enemy.isFainted = true }
+            showFloatingDamage("-\(statusResult.damage)", onEnemy: true)
         }
         if statusResult.cured { enemy.status = nil }
         state.enemyTeam[enemyIdx] = enemy
         state.phase = .enemyTurn
         battleState = state
+
+        if enemy.isFainted {
+            await processMessages(messages + ["\(enemy.name) fainted!"])
+            guard var s = battleState else { return }
+            if let nextIdx = s.enemyTeam.indices.first(where: { $0 > s.activeEnemyIndex && !s.enemyTeam[$0].isFainted }) {
+                let nextEnemy = s.enemyTeam[nextIdx]
+                s.activeEnemyIndex = nextIdx
+                battleState = s
+                await processMessages(["Opponent sent out \(nextEnemy.name)!"])
+                await executePlayerStatusTurn()
+            } else {
+                await endBattle(won: true)
+            }
+            return
+        }
 
         if statusResult.shouldSkip {
             await processMessages(messages)
@@ -455,6 +557,8 @@ final class GameViewModel {
         let move = BattleEngine.chooseEnemyMove(enemy: enemy, player: player)
         messages.append("\(enemy.name) used \(move.name)!")
 
+        await playAttackLunge(isPlayer: false)
+
         let hits = Double.random(in: 0..<100) < Double(move.accuracy)
         var updatedPlayer = player
         if !hits {
@@ -464,12 +568,14 @@ final class GameViewModel {
             if result.effectiveness == 0 {
                 messages.append(result.message.isEmpty ? "It doesn't affect \(player.name)..." : result.message)
             } else {
+                let previousHP = updatedPlayer.currentHP
                 updatedPlayer.currentHP = max(0, updatedPlayer.currentHP - result.damage)
                 if updatedPlayer.currentHP == 0 { updatedPlayer.isFainted = true }
                 state.playerTeam[playerIdx] = updatedPlayer
 
                 if let triggered = result.abilityTriggered { messages.append(triggered) }
                 if !result.message.isEmpty { messages.append(result.message) }
+                messages.append("\(player.name) took \(result.damage) damage! (\(previousHP)→\(updatedPlayer.currentHP))")
 
                 if BattleEngine.checkStaticTrigger(defender: updatedPlayer, move: move) && enemy.status == nil {
                     let statusMsg = BattleEngine.applyStatusEffect(&enemy, .paralysis)
@@ -477,9 +583,11 @@ final class GameViewModel {
                     state.enemyTeam[enemyIdx] = enemy
                 }
 
+                battleState = state
                 triggerAnimation(\.isPlayerShaking, duration: 0.4)
                 triggerAnimation(\.isPlayerFlashing, duration: 0.6)
                 if result.isCrit { triggerAnimation(\.isScreenShaking, duration: 0.5) }
+                showFloatingDamage("-\(result.damage)", onEnemy: false)
             }
         } else if let statusEffect = move.statusEffect, !move.isSelfStatus {
             let statusMsg = BattleEngine.applyStatusEffect(&updatedPlayer, statusEffect)
@@ -495,7 +603,7 @@ final class GameViewModel {
 
         await processMessages(messages)
 
-        guard let latest = battleState else { return }
+        guard let latest = battleState, latest.phase != .battleEnd else { return }
         let latestPlayer = latest.playerTeam[latest.activePlayerIndex]
         if latestPlayer.isFainted {
             await processMessages(["\(latestPlayer.name) fainted!"])
@@ -513,6 +621,7 @@ final class GameViewModel {
 
     private func executePlayerStatusTurn() async {
         guard var state = battleState else { return }
+        guard state.phase != .battleEnd else { return }
         let playerIdx = state.activePlayerIndex
         var player = state.playerTeam[playerIdx]
         let statusResult = BattleEngine.processStatusDamage(&player)
@@ -521,14 +630,19 @@ final class GameViewModel {
         if statusResult.damage > 0 {
             player.currentHP = max(0, player.currentHP - statusResult.damage)
             if player.currentHP == 0 { player.isFainted = true }
+            showFloatingDamage("-\(statusResult.damage)", onEnemy: false)
         }
         if statusResult.cured { player.status = nil }
         state.playerTeam[playerIdx] = player
         battleState = state
 
         guard !messages.isEmpty else {
-            battleState?.phase = .menu
-            battleState?.displayedMessage = "What will \(player.name) do?"
+            if var s = battleState {
+                s.turn += 1
+                s.phase = .menu
+                s.displayedMessage = "What will \(player.name) do?"
+                battleState = s
+            }
             return
         }
 
@@ -544,8 +658,12 @@ final class GameViewModel {
                 battleState?.phase = .switchPokemon
             }
         } else {
-            battleState?.phase = .menu
-            battleState?.displayedMessage = "What will \(player.name) do?"
+            if var s = battleState {
+                s.turn += 1
+                s.phase = .menu
+                s.displayedMessage = "What will \(player.name) do?"
+                battleState = s
+            }
         }
     }
 
@@ -553,20 +671,26 @@ final class GameViewModel {
     /// the active index changes, matching the original's use of the stale outer-scope `battleState`.
     func playerSwitch(_ pokemonIndex: Int) {
         guard let state = battleState else { return }
+        let forced = state.phase == .switchPokemon
+        guard forced || state.phase == .menu || state.phase == .moveSelect || state.phase == .bagOpen else { return }
         guard pokemonIndex < state.playerTeam.count else { return }
         let newPokemon = state.playerTeam[pokemonIndex]
         guard !newPokemon.isFainted, pokemonIndex != state.activePlayerIndex else { return }
 
-        let wasForced = state.phase == .switchPokemon && state.playerTeam[state.activePlayerIndex].isFainted
+        let wasForced = forced && state.playerTeam[state.activePlayerIndex].isFainted
 
+        beginActionLock()
         battleState?.activePlayerIndex = pokemonIndex
-        battleState?.phase = .animating
 
         Task {
             await processMessages(["Go! \(newPokemon.name)!"])
             if wasForced {
-                battleState?.phase = .menu
-                battleState?.displayedMessage = "What will \(newPokemon.name) do?"
+                if var s = battleState {
+                    s.turn += 1
+                    s.phase = .menu
+                    s.displayedMessage = "What will \(newPokemon.name) do?"
+                    battleState = s
+                }
             } else {
                 await executeEnemyTurn()
             }
@@ -575,30 +699,47 @@ final class GameViewModel {
 
     /// Mirrors `useItem` in GameContext.tsx.
     func useItem(_ item: Item, at itemIndex: Int) {
-        guard var state = battleState else { return }
-        let playerIdx = state.activePlayerIndex
-        var player = state.playerTeam[playerIdx]
+        guard let state = battleState else { return }
+        guard state.phase == .menu || state.phase == .bagOpen || state.phase == .moveSelect else { return }
+        beginActionLock()
+
+        var mutable = state
+        let playerIdx = mutable.activePlayerIndex
+        var player = mutable.playerTeam[playerIdx]
         var messages: [String] = []
 
         switch item.effect {
         case .heal200:
             let healed = min(player.maxHP - player.currentHP, Int(item.value))
             player.currentHP += healed
-            messages.append("\(player.name) recovered \(healed) HP!")
+            messages.append(healed > 0
+                ? "\(player.name) recovered \(healed) HP!"
+                : "\(player.name)'s HP is already full!")
+        case .healHalf:
+            let target = max(1, player.maxHP / 2)
+            let healed = min(player.maxHP - player.currentHP, target)
+            player.currentHP += healed
+            messages.append(healed > 0
+                ? "\(player.name) recovered \(healed) HP!"
+                : "\(player.name)'s HP is already full!")
+        case .healFull:
+            let healed = player.maxHP - player.currentHP
+            player.currentHP = player.maxHP
+            messages.append(healed > 0
+                ? "\(player.name) recovered \(healed) HP!"
+                : "\(player.name)'s HP is already full!")
         case .boostAtk:
             player.tempAtkBoost *= item.value
             messages.append("\(player.name)'s attack rose!")
         case .boostDef:
             player.tempDefBoost *= item.value
             messages.append("\(player.name)'s defense rose!")
-        case .healHalf, .healFull:
-            break // Unimplemented in the original app (no starting item uses these effects).
         }
 
-        state.playerTeam[playerIdx] = player
-        state.phase = .animating
-        state.itemsUsed += 1
-        battleState = state
+        mutable.playerTeam[playerIdx] = player
+        mutable.phase = .animating
+        mutable.itemsUsed += 1
+        battleState = mutable
 
         if itemIndex < trainerData.items.count {
             trainerData.items[itemIndex].count -= 1
@@ -618,6 +759,9 @@ final class GameViewModel {
     /// Mirrors `runFromBattle` in GameContext.tsx.
     func runFromBattle() {
         guard let state = battleState else { return }
+        guard state.phase == .menu || state.phase == .moveSelect || state.phase == .bagOpen else { return }
+        beginActionLock()
+
         let escapeChance = 0.6 + Double.random(in: 0..<1) * 0.4
         let playerSpd = Double(state.playerTeam[state.activePlayerIndex].spd)
         let enemySpd = Double(state.enemyTeam[state.activeEnemyIndex].spd)
@@ -632,7 +776,7 @@ final class GameViewModel {
                 navigate(.title)
             } else {
                 await processMessages(["Can't escape!", "\(enemyName) blocks the way!"])
-                battleState?.phase = .menu
+                await executeEnemyTurn()
             }
         }
     }

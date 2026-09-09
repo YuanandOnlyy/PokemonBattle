@@ -1,7 +1,8 @@
 import SwiftUI
 
 /// Mirrors `HPBar` in ui.tsx / the inline `HPBar` in BattleScreen.tsx: a bordered track with a
-/// fill that goes green > 50%, yellow 25-50%, red below that.
+/// fill that goes green > 50%, yellow 25-50%, red below that. The fill width is driven by the
+/// live HP ratio and animates whenever `current` changes so damage is visually obvious.
 struct HPBarView: View {
     var current: Int
     var max: Int
@@ -26,11 +27,12 @@ struct HPBarView: View {
                 Rectangle()
                     .fill(fillColor)
                     .frame(width: geo.size.width * percent)
-                    .animation(.easeInOut(duration: 0.5), value: percent)
             }
         }
-        .frame(height: compact ? 6 : 8)
+        .frame(height: compact ? 10 : 14)
         .overlay(Rectangle().stroke(skin.darkest, lineWidth: 2))
+        .animation(.easeOut(duration: 0.45), value: percent)
+        .accessibilityLabel("HP \(current) of \(max)")
     }
 }
 
@@ -52,10 +54,10 @@ struct XPBarView: View {
                 Rectangle()
                     .fill(Color(hex: "#4080ff"))
                     .frame(width: geo.size.width * percent)
-                    .animation(.easeInOut(duration: 0.5), value: percent)
             }
         }
-        .frame(height: 6)
+        .frame(height: 8)
         .overlay(Rectangle().stroke(skin.darkest, lineWidth: 2))
+        .animation(.easeOut(duration: 0.45), value: percent)
     }
 }
