@@ -38,13 +38,13 @@ struct TrainerProfileView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            header
+            header.staggerAppear(0)
             ScrollView {
                 VStack(spacing: 10) {
-                    heroCard
-                    battleRecordCard
-                    combatStatsCard
-                    achievementsGridCard
+                    heroCard.staggerAppear(1)
+                    battleRecordCard.staggerAppear(2)
+                    combatStatsCard.staggerAppear(3)
+                    achievementsGridCard.staggerAppear(4)
                 }
                 .padding(10)
             }

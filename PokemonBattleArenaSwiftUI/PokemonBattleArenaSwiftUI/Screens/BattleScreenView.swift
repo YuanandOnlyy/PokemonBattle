@@ -33,9 +33,9 @@ struct BattleScreenView: View {
         let isBusy = state.phase == .animating || state.phase == .enemyTurn || state.phase == .battleEnd
 
         return VStack(spacing: 0) {
-            arena(state, activePlayer: activePlayer, activeEnemy: activeEnemy)
-            dialog(state)
-            actionPanel(state, activePlayer: activePlayer, isBusy: isBusy)
+            arena(state, activePlayer: activePlayer, activeEnemy: activeEnemy).staggerAppear(0)
+            dialog(state).staggerAppear(1)
+            actionPanel(state, activePlayer: activePlayer, isBusy: isBusy).staggerAppear(2)
         }
         .background(skin.medium)
         .modifier(ScreenShakeEffect(active: state.isScreenShaking))

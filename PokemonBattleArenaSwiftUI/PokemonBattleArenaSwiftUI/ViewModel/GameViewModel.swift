@@ -1,5 +1,6 @@
 import Foundation
 import Observation
+import SwiftUI
 
 /// App-wide game state and orchestration. A port of `GameContext.tsx` / `GameProvider`.
 ///
@@ -27,7 +28,9 @@ final class GameViewModel {
     // MARK: - Navigation & persistence
 
     func navigate(_ screen: Screen) {
-        currentScreen = screen
+        withAnimation(.easeInOut(duration: 0.28)) {
+            currentScreen = screen
+        }
     }
 
     /// Mirrors `updateTrainer(partial)` in GameContext.tsx: mutate the trainer save in place, then

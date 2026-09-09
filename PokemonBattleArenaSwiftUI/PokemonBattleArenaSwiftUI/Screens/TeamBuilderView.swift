@@ -26,10 +26,10 @@ struct TeamBuilderView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            header
-            teamSlots
-            searchAndFilter
-            pokemonGrid
+            header.staggerAppear(0)
+            teamSlots.staggerAppear(1)
+            searchAndFilter.staggerAppear(2)
+            pokemonGrid.staggerAppear(3)
         }
         .background(skin.medium)
     }

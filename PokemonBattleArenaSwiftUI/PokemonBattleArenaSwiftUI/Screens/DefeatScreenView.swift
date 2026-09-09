@@ -3,6 +3,8 @@ import SwiftUI
 /// Mirrors `DefeatScreen.tsx`.
 struct DefeatScreenView: View {
     var viewModel: GameViewModel
+    @State private var titleOffset: CGFloat = -16
+    @State private var titleOpacity: Double = 0
 
     private var skin: SkinColors { viewModel.trainerData.settings.consoleSkin.colors }
 
@@ -12,6 +14,12 @@ struct DefeatScreenView: View {
                 content(result)
             } else {
                 Color.clear.onAppear { viewModel.navigate(.title) }
+            }
+        }
+        .task {
+            withAnimation(.easeOut(duration: 0.5)) {
+                titleOffset = 0
+                titleOpacity = 1
             }
         }
     }
@@ -35,6 +43,8 @@ struct DefeatScreenView: View {
                     Text("ALL POKEMON FAINTED").pixelText(9, Color(hex: "#c04000")).tracking(1)
                 }
                 .padding(.top, 12)
+                .offset(y: titleOffset)
+                .opacity(titleOpacity)
 
                 HStack(spacing: 10) {
                     ForEach(result.xpGained) { entry in
@@ -51,6 +61,7 @@ struct DefeatScreenView: View {
                 .padding(.vertical, 8)
                 .background(Color(hex: "#1a0700"))
                 .overlay(Rectangle().stroke(Color(hex: "#3a0f00"), lineWidth: 3))
+                .staggerAppear(0)
 
                 if let tip = result.tip {
                     VStack(alignment: .leading, spacing: 5) {
@@ -62,10 +73,11 @@ struct DefeatScreenView: View {
                     .frame(maxWidth: 340, alignment: .leading)
                     .background(Color(hex: "#1a1a00"))
                     .overlay(Rectangle().stroke(Color(hex: "#8b6000"), lineWidth: 3))
+                    .staggerAppear(1)
                 }
 
-                xpSection(result, totalXP: totalXP)
-                recordSection(trainer, winRate: winRate)
+                xpSection(result, totalXP: totalXP).staggerAppear(2)
+                recordSection(trainer, winRate: winRate).staggerAppear(3)
 
                 VStack(spacing: 8) {
                     Button("\u{2694} TRY AGAIN") {
@@ -82,6 +94,7 @@ struct DefeatScreenView: View {
                 }
                 .frame(maxWidth: 340)
                 .padding(.bottom, 16)
+                .staggerAppear(4)
             }
             .padding(.horizontal, 14)
             .frame(maxWidth: .infinity)

@@ -23,14 +23,14 @@ struct TitleScreenView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            hud
-            titleBlock
-            showcase
-            showcaseDots
-            pressStart
-            menu
-            questsBanner
-            footer
+            hud.staggerAppear(0)
+            titleBlock.staggerAppear(1)
+            showcase.staggerAppear(2)
+            showcaseDots.staggerAppear(2)
+            pressStart.staggerAppear(3)
+            menu.staggerAppear(4)
+            questsBanner.staggerAppear(5)
+            footer.staggerAppear(6)
         }
         .background(skin.medium)
         .task {

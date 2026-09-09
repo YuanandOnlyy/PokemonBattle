@@ -28,9 +28,9 @@ struct BattleHistoryView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            header
-            summaryBar
-            filterTabs
+            header.staggerAppear(0)
+            summaryBar.staggerAppear(1)
+            filterTabs.staggerAppear(2)
             ScrollView {
                 if filtered.isEmpty {
                     Text("NO BATTLES YET\nGO BATTLE!")
@@ -45,6 +45,7 @@ struct BattleHistoryView: View {
                             BattleRecordRow(record: record, skin: skin)
                         }
                     }
+                    .staggerAppear(3)
                 }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)

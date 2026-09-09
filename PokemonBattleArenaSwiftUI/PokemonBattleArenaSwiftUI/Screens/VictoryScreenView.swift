@@ -19,6 +19,8 @@ nonisolated enum PokemonNameLookup {
 struct VictoryScreenView: View {
     var viewModel: GameViewModel
     @State private var showLevelUp = false
+    @State private var titleScale: CGFloat = 0.5
+    @State private var titleOpacity: Double = 0
 
     private var skin: SkinColors { viewModel.trainerData.settings.consoleSkin.colors }
 
@@ -31,6 +33,10 @@ struct VictoryScreenView: View {
             }
         }
         .task {
+            withAnimation(.spring(response: 0.5, dampingFraction: 0.6)) {
+                titleScale = 1
+                titleOpacity = 1
+            }
             try? await Task.sleep(nanoseconds: 800_000_000)
             showLevelUp = true
         }
@@ -50,6 +56,8 @@ struct VictoryScreenView: View {
                     Text("\u{2605}\u{2605}\u{2605} \u{2605}\u{2605}\u{2605}").pixelText(11, skin.medium).tracking(3)
                 }
                 .padding(.top, 8)
+                .scaleEffect(titleScale)
+                .opacity(titleOpacity)
 
                 Text((result.enemyDefeated?.uppercased() ?? "ENEMY") + " DEFEATED!")
                     .pixelText(9, skin.lightest)
@@ -57,6 +65,7 @@ struct VictoryScreenView: View {
                     .padding(.vertical, 6)
                     .background(skin.dark)
                     .overlay(Rectangle().stroke(skin.medium, lineWidth: 3))
+                    .staggerAppear(0)
 
                 if let mvpName = result.mvpPokemon, let mvpID {
                     HStack(spacing: 8) {
@@ -71,10 +80,11 @@ struct VictoryScreenView: View {
                     .frame(maxWidth: 340, alignment: .leading)
                     .background(skin.darkest)
                     .overlay(Rectangle().stroke(skin.accent, lineWidth: 3))
+                    .staggerAppear(1)
                 }
 
-                xpSection(result, totalXP: totalXP)
-                statsSection
+                xpSection(result, totalXP: totalXP).staggerAppear(2)
+                statsSection.staggerAppear(3)
 
                 VStack(spacing: 8) {
                     Button("\u{2694} REMATCH") {
@@ -99,6 +109,7 @@ struct VictoryScreenView: View {
                 }
                 .frame(maxWidth: 340)
                 .padding(.bottom, 12)
+                .staggerAppear(4)
             }
             .padding(.horizontal, 14)
             .frame(maxWidth: .infinity)

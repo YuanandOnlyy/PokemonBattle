@@ -18,14 +18,14 @@ struct SettingsView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            header
+            header.staggerAppear(0)
             ScrollView {
                 VStack(spacing: 12) {
-                    consoleSkinCard
-                    audioDisplayCard
-                    animSpeedCard
-                    aboutCard
-                    dangerZoneCard
+                    consoleSkinCard.staggerAppear(1)
+                    audioDisplayCard.staggerAppear(2)
+                    animSpeedCard.staggerAppear(3)
+                    aboutCard.staggerAppear(4)
+                    dangerZoneCard.staggerAppear(5)
                 }
                 .padding(10)
             }

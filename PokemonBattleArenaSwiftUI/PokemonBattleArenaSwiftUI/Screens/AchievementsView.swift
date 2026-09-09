@@ -21,15 +21,15 @@ struct AchievementsView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            header
-            progressSummary
+            header.staggerAppear(0)
+            progressSummary.staggerAppear(1)
             ScrollView {
                 VStack(spacing: 8) {
-                    ForEach(achievements) { achievement in
-                        achievementCard(achievement)
+                    ForEach(Array(achievements.enumerated()), id: \.element.id) { index, achievement in
+                        achievementCard(achievement).staggerAppear(2 + index)
                     }
                     if unlocked == achievements.count {
-                        allUnlockedBanner
+                        allUnlockedBanner.staggerAppear(2 + achievements.count)
                     }
                 }
                 .padding(10)

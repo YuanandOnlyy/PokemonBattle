@@ -48,6 +48,7 @@ struct PokedexView: View {
             .padding(.vertical, 10)
             .background(skin.darkest)
             .overlay(Rectangle().fill(skin.dark).frame(height: 4), alignment: .bottom)
+            .staggerAppear(0)
 
             VStack(alignment: .leading, spacing: 6) {
                 TextField("", text: $search, prompt: Text("\u{1F50D} SEARCH BY NAME OR NUMBER...").foregroundColor(skin.dark))
@@ -63,6 +64,7 @@ struct PokedexView: View {
             .padding(8)
             .background(skin.dark)
             .overlay(Rectangle().fill(skin.darkest).frame(height: 3), alignment: .bottom)
+            .staggerAppear(1)
 
             ScrollView {
                 if filtered.isEmpty {
@@ -78,6 +80,7 @@ struct PokedexView: View {
                             .buttonStyle(.plain)
                         }
                     }
+                    .staggerAppear(2)
                 }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -140,6 +143,7 @@ private struct PokemonDetailView: View {
             .frame(maxWidth: .infinity, alignment: .leading)
             .background(skin.darkest)
             .overlay(Rectangle().fill(skin.dark).frame(height: 4), alignment: .bottom)
+            .staggerAppear(0)
 
             VStack(spacing: 6) {
                 OfficialSpriteView(id: pokemon.id, width: 130, height: 130)
@@ -154,6 +158,7 @@ private struct PokemonDetailView: View {
             .frame(maxWidth: .infinity)
             .background(LinearGradient(colors: [skin.darkest, skin.dark], startPoint: .top, endPoint: .bottom))
             .overlay(Rectangle().fill(skin.darkest).frame(height: 4), alignment: .bottom)
+            .staggerAppear(1)
 
             HStack(spacing: 0) {
                 ForEach(Tab.allCases, id: \.self) { tab in
@@ -173,6 +178,7 @@ private struct PokemonDetailView: View {
             }
             .background(skin.dark)
             .overlay(Rectangle().fill(skin.darkest).frame(height: 3), alignment: .bottom)
+            .staggerAppear(2)
 
             ScrollView {
                 switch activeTab {
@@ -183,6 +189,7 @@ private struct PokemonDetailView: View {
             }
             .padding(10)
             .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .staggerAppear(3)
         }
         .background(skin.medium)
     }
