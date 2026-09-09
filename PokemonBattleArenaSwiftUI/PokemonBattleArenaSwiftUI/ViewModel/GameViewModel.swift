@@ -23,6 +23,17 @@ final class GameViewModel {
     init() {
         trainerData = Self.loadTrainer()
         ensureDailyQuests()
+        if !Self.hasLocalSave {
+            Task { await syncFromCloudIfAvailable() }
+        }
+    }
+
+    /// Fresh install (no local save yet): pull down a prior cloud save, if this device/account has
+    /// one, so progress isn't lost on reinstall.
+    private func syncFromCloudIfAvailable() async {
+        guard let cloud = await SupabaseService.loadTrainer() else { return }
+        trainerData = cloud
+        saveTrainer()
     }
 
     // MARK: - Navigation & persistence
@@ -60,6 +71,11 @@ final class GameViewModel {
     private func saveTrainer() {
         guard let data = try? JSONEncoder().encode(trainerData) else { return }
         UserDefaults.standard.set(data, forKey: Self.storageKey)
+        Task { await SupabaseService.saveTrainer(trainerData) }
+    }
+
+    private static var hasLocalSave: Bool {
+        UserDefaults.standard.data(forKey: storageKey) != nil
     }
 
     private static func loadTrainer() -> TrainerData {
