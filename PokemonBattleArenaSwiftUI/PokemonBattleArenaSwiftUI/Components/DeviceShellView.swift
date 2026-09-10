@@ -17,7 +17,6 @@ struct DeviceShellView<Content: View>: View {
     var body: some View {
         GeometryReader { geo in
             let compact = geo.size.height < 720
-            let outerPad: CGFloat = compact ? 6 : 10
 
             VStack(spacing: 0) {
                 topChrome(compact: compact)
@@ -25,21 +24,11 @@ struct DeviceShellView<Content: View>: View {
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                 bottomChrome(compact: compact)
             }
-            .background(devBody)
-            .clipShape(
-                UnevenRoundedRectangle(
-                    topLeadingRadius: 12, bottomLeadingRadius: compact ? 28 : 40,
-                    bottomTrailingRadius: compact ? 28 : 40, topTrailingRadius: 12
-                )
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: 12)
-                    .stroke(Color(hex: "#2a2a3a"), lineWidth: 3)
-            )
-            .shadow(color: .black.opacity(0.8), radius: compact ? 16 : 30, y: compact ? 10 : 20)
-            .padding(outerPad)
             .frame(width: geo.size.width, height: geo.size.height)
         }
+        // Console body fills the entire display; the dark body extends behind the
+        // status bar and home indicator so there are no white margins around the shell.
+        .background(devBody.ignoresSafeArea())
     }
 
     private func topChrome(compact: Bool) -> some View {

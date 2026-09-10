@@ -9,14 +9,16 @@ struct HPBarView: View {
     var compact: Bool = false
     var skin: SkinColors
 
+    @State private var displayedPercent: Double = 0
+
     private var percent: Double {
         guard max > 0 else { return 0 }
         return Swift.max(0, Swift.min(1, Double(current) / Double(max)))
     }
 
     private var fillColor: Color {
-        if percent > 0.5 { return skin.dark }
-        if percent > 0.25 { return Color(hex: "#c0a000") }
+        if displayedPercent > 0.5 { return skin.dark }
+        if displayedPercent > 0.25 { return Color(hex: "#c0a000") }
         return Color(hex: "#c04000")
     }
 
@@ -26,12 +28,20 @@ struct HPBarView: View {
                 Rectangle().fill(skin.darkest)
                 Rectangle()
                     .fill(fillColor)
-                    .frame(width: geo.size.width * percent)
+                    .frame(width: geo.size.width * displayedPercent)
+                    .animation(.easeOut(duration: 0.6), value: displayedPercent)
             }
         }
         .frame(height: compact ? 10 : 14)
         .overlay(Rectangle().stroke(skin.darkest, lineWidth: 2))
-        .animation(.easeOut(duration: 0.45), value: percent)
+        .onAppear { displayedPercent = percent }
+        .onChange(of: current) { _, _ in
+            // Defer into a fresh Task so the withAnimation transaction is not swallowed
+            // inside the current @Observable render pass.
+            Task { @MainActor in
+                withAnimation(.easeOut(duration: 0.6)) { displayedPercent = percent }
+            }
+        }
         .accessibilityLabel("HP \(current) of \(max)")
     }
 }
@@ -41,6 +51,8 @@ struct XPBarView: View {
     var current: Int
     var max: Int
     var skin: SkinColors
+
+    @State private var displayedPercent: Double = 0
 
     private var percent: Double {
         guard max > 0 else { return 0 }
@@ -53,11 +65,17 @@ struct XPBarView: View {
                 Rectangle().fill(skin.darkest)
                 Rectangle()
                     .fill(Color(hex: "#4080ff"))
-                    .frame(width: geo.size.width * percent)
+                    .frame(width: geo.size.width * displayedPercent)
+                    .animation(.easeOut(duration: 0.6), value: displayedPercent)
             }
         }
         .frame(height: 8)
         .overlay(Rectangle().stroke(skin.darkest, lineWidth: 2))
-        .animation(.easeOut(duration: 0.45), value: percent)
+        .onAppear { displayedPercent = percent }
+        .onChange(of: current) { _, _ in
+            Task { @MainActor in
+                withAnimation(.easeOut(duration: 0.6)) { displayedPercent = percent }
+            }
+        }
     }
 }

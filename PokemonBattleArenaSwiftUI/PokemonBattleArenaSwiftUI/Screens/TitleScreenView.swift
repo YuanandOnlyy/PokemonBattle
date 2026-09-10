@@ -28,19 +28,25 @@ struct TitleScreenView: View {
     private var skin: SkinColors { viewModel.trainerData.settings.consoleSkin.colors }
 
     var body: some View {
-        ScrollView {
-            VStack(spacing: 0) {
-                hud.staggerAppear(0)
-                titleBlock.staggerAppear(1)
-                showcase.staggerAppear(2)
-                showcaseDots.staggerAppear(2)
-                pressStart.staggerAppear(3)
-                menu.staggerAppear(4)
-                questsBanner.staggerAppear(5)
-                footer.staggerAppear(6)
+        GeometryReader { geo in
+            ScrollView {
+                VStack(spacing: 0) {
+                    hud.staggerAppear(0)
+                    titleBlock.staggerAppear(1)
+                    showcase.staggerAppear(2)
+                    showcaseDots.staggerAppear(2)
+                    pressStart.staggerAppear(3)
+                    menu.staggerAppear(4)
+                    questsBanner.staggerAppear(5)
+                    // Flexible fill pushes the footer to the bottom edge so short content
+                    // no longer leaves a large empty block at the bottom of the screen.
+                    Spacer(minLength: 0)
+                    footer.staggerAppear(6)
+                }
+                .frame(minHeight: geo.size.height)
             }
         }
-        .background(skin.medium)
+        .background(skin.darkest)
         .task {
             // Runs for as long as this view stays on screen; SwiftUI cancels it automatically
             // when the Title screen is navigated away from, so it doesn't restart on every
