@@ -10,8 +10,19 @@
 		A1SUPABASEBUILDFILE01 /* Supabase in Frameworks */ = {isa = PBXBuildFile; productRef = A1SUPABASEPRODUCT01 /* Supabase */; };
 /* End PBXBuildFile section */
 
+/* Begin PBXContainerItemProxy section */
+		A1TESTPROXY01 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 8398F754304EA57E00A13863 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 8398F75B304EA57E00A13863;
+			remoteInfo = PokemonBattleArenaSwiftUI;
+		};
+/* End PBXContainerItemProxy section */
+
 /* Begin PBXFileReference section */
 		8398F75C304EA57E00A13863 /* PokemonBattleArenaSwiftUI.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = PokemonBattleArenaSwiftUI.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		A1TESTPRODUCT01 /* PokemonBattleArenaSwiftUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PokemonBattleArenaSwiftUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -33,6 +44,11 @@
 			path = PokemonBattleArenaSwiftUI;
 			sourceTree = "<group>";
 		};
+		A1TESTSSYNC01 /* PokemonBattleArenaSwiftUITests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = PokemonBattleArenaSwiftUITests;
+			sourceTree = "<group>";
+		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -44,6 +60,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		A1TESTFRAMEWORKS01 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -51,6 +74,7 @@
 			isa = PBXGroup;
 			children = (
 				8398F75E304EA57E00A13863 /* PokemonBattleArenaSwiftUI */,
+				A1TESTSSYNC01 /* PokemonBattleArenaSwiftUITests */,
 				8398F75D304EA57E00A13863 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -59,6 +83,7 @@
 			isa = PBXGroup;
 			children = (
 				8398F75C304EA57E00A13863 /* PokemonBattleArenaSwiftUI.app */,
+				A1TESTPRODUCT01 /* PokemonBattleArenaSwiftUITests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -89,6 +114,29 @@
 			productReference = 8398F75C304EA57E00A13863 /* PokemonBattleArenaSwiftUI.app */;
 			productType = "com.apple.product-type.application";
 		};
+		A1TESTTARGET01 /* PokemonBattleArenaSwiftUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A1TESTCONFLIST01 /* Build configuration list for PBXNativeTarget "PokemonBattleArenaSwiftUITests" */;
+			buildPhases = (
+				A1TESTSOURCES01 /* Sources */,
+				A1TESTFRAMEWORKS01 /* Frameworks */,
+				A1TESTRESOURCES01 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				A1TESTDEP01 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				A1TESTSSYNC01 /* PokemonBattleArenaSwiftUITests */,
+			);
+			name = PokemonBattleArenaSwiftUITests;
+			packageProductDependencies = (
+			);
+			productName = PokemonBattleArenaSwiftUITests;
+			productReference = A1TESTPRODUCT01 /* PokemonBattleArenaSwiftUITests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -101,6 +149,10 @@
 				TargetAttributes = {
 					8398F75B304EA57E00A13863 = {
 						CreatedOnToolsVersion = 26.6;
+					};
+					A1TESTTARGET01 = {
+						CreatedOnToolsVersion = 26.6;
+						TestTargetID = 8398F75B304EA57E00A13863;
 					};
 				};
 			};
@@ -122,12 +174,20 @@
 			projectRoot = "";
 			targets = (
 				8398F75B304EA57E00A13863 /* PokemonBattleArenaSwiftUI */,
+				A1TESTTARGET01 /* PokemonBattleArenaSwiftUITests */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
 		8398F75A304EA57E00A13863 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A1TESTRESOURCES01 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -144,7 +204,22 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		A1TESTSOURCES01 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		A1TESTDEP01 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 8398F75B304EA57E00A13863 /* PokemonBattleArenaSwiftUI */;
+			targetProxy = A1TESTPROXY01 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		8398F765304EA58000A13863 /* Debug */ = {
@@ -332,6 +407,46 @@
 			};
 			name = Release;
 		};
+		A1TESTCONFDEBUG01 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = mseuf.edu.ph.PokemonBattleArenaSwiftUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/PokemonBattleArenaSwiftUI.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/PokemonBattleArenaSwiftUI";
+			};
+			name = Debug;
+		};
+		A1TESTCONFRELEASE01 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = mseuf.edu.ph.PokemonBattleArenaSwiftUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/PokemonBattleArenaSwiftUI.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/PokemonBattleArenaSwiftUI";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -349,6 +464,15 @@
 			buildConfigurations = (
 				8398F768304EA58000A13863 /* Debug */,
 				8398F769304EA58000A13863 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		A1TESTCONFLIST01 /* Build configuration list for PBXNativeTarget "PokemonBattleArenaSwiftUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A1TESTCONFDEBUG01 /* Debug */,
+				A1TESTCONFRELEASE01 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

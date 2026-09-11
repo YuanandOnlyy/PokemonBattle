@@ -52,6 +52,30 @@ final class GameViewModel {
         navigate(.teamBuilder)
     }
 
+    /// Apply a cloud `TrainerProfile` into the local save after sign-up / log-in / session restore.
+    func applyAuthenticatedProfile(_ profile: TrainerProfile, isNewTrainer: Bool) {
+        trainerData.name = profile.trainerName
+        if !isNewTrainer {
+            trainerData.level = max(trainerData.level, profile.level)
+            trainerData.xp = max(trainerData.xp, profile.xp)
+            trainerData.wins = max(trainerData.wins, profile.wins)
+            trainerData.losses = max(trainerData.losses, profile.losses)
+            trainerData.streak = max(trainerData.streak, profile.winStreak)
+        } else {
+            trainerData.level = profile.level
+            trainerData.xp = profile.xp
+            trainerData.wins = profile.wins
+            trainerData.losses = profile.losses
+            trainerData.streak = profile.winStreak
+        }
+        saveTrainer()
+        if isNewTrainer {
+            navigate(.teamBuilder)
+        } else if currentScreen != .title && currentScreen != .teamBuilder {
+            navigate(.title)
+        }
+    }
+
     /// Mirrors `updateTrainer(partial)` in GameContext.tsx: mutate the trainer save in place, then
     /// persist. Used by Settings/TrainerProfile for skin, toggles, name, and reset.
     func updateTrainer(_ mutate: (inout TrainerData) -> Void) {
@@ -462,16 +486,34 @@ final class GameViewModel {
                     state.playerTeam[playerIdx] = player
                 }
 
+                // Publish HP first, then fire impact FX on the live battleState.
+                // Do NOT assign the local `state` copy afterward — that stale copy still has
+                // shaking/flashing/floatingDamage cleared and would wipe the animations (and
+                // make the HP bar look like it never drained if the view also missed the pulse).
                 battleState = state
                 triggerAnimation(\.isEnemyShaking, duration: 0.4)
                 triggerAnimation(\.isEnemyFlashing, duration: 0.6)
                 if result.isCrit { triggerAnimation(\.isScreenShaking, duration: 0.5) }
                 if result.effectiveness >= 2 { triggerAnimation(\.isScreenShaking, duration: 0.3) }
                 showFloatingDamage("-\(result.damage)", onEnemy: true)
+                // Keep local `state` in sync with flags written directly onto battleState.
+                if let live = battleState { state = live }
             }
         }
 
-        battleState = state
+        // Merge only non-FX fields if battleState already holds newer animation pulses.
+        if var live = battleState {
+            live.playerTeam = state.playerTeam
+            live.enemyTeam = state.enemyTeam
+            live.totalDamageDealt = state.totalDamageDealt
+            live.totalCritHits = state.totalCritHits
+            live.totalSuperEffective = state.totalSuperEffective
+            live.damageByPokemon = state.damageByPokemon
+            live.phase = state.phase
+            battleState = live
+        } else {
+            battleState = state
+        }
         await processMessages(messages)
 
         guard let latest = battleState, latest.phase != .battleEnd else { return }
@@ -526,12 +568,14 @@ final class GameViewModel {
         if statusResult.damage > 0 {
             enemy.currentHP = max(0, enemy.currentHP - statusResult.damage)
             if enemy.currentHP == 0 { enemy.isFainted = true }
-            showFloatingDamage("-\(statusResult.damage)", onEnemy: true)
         }
         if statusResult.cured { enemy.status = nil }
         state.enemyTeam[enemyIdx] = enemy
         state.phase = .enemyTurn
         battleState = state
+        if statusResult.damage > 0 {
+            showFloatingDamage("-\(statusResult.damage)", onEnemy: true)
+        }
 
         if enemy.isFainted {
             await processMessages(messages + ["\(enemy.name) fainted!"])
@@ -583,11 +627,14 @@ final class GameViewModel {
                     state.enemyTeam[enemyIdx] = enemy
                 }
 
+                // Same as player attack: publish HP, then pulse FX on live battleState —
+                // never reassign a pre-FX local copy afterward (that cleared shake/flash/HP pulse).
                 battleState = state
                 triggerAnimation(\.isPlayerShaking, duration: 0.4)
                 triggerAnimation(\.isPlayerFlashing, duration: 0.6)
                 if result.isCrit { triggerAnimation(\.isScreenShaking, duration: 0.5) }
                 showFloatingDamage("-\(result.damage)", onEnemy: false)
+                if let live = battleState { state = live }
             }
         } else if let statusEffect = move.statusEffect, !move.isSelfStatus {
             let statusMsg = BattleEngine.applyStatusEffect(&updatedPlayer, statusEffect)
@@ -599,7 +646,14 @@ final class GameViewModel {
             enemy.moves[mi].currentPP = max(0, enemy.moves[mi].currentPP - 1)
         }
         state.enemyTeam[enemyIdx] = enemy
-        battleState = state
+        if var live = battleState {
+            live.playerTeam = state.playerTeam
+            live.enemyTeam = state.enemyTeam
+            live.phase = state.phase
+            battleState = live
+        } else {
+            battleState = state
+        }
 
         await processMessages(messages)
 
@@ -630,11 +684,14 @@ final class GameViewModel {
         if statusResult.damage > 0 {
             player.currentHP = max(0, player.currentHP - statusResult.damage)
             if player.currentHP == 0 { player.isFainted = true }
-            showFloatingDamage("-\(statusResult.damage)", onEnemy: false)
         }
         if statusResult.cured { player.status = nil }
         state.playerTeam[playerIdx] = player
         battleState = state
+        // Apply floating number after publishing HP — assigning `state` afterward would wipe it.
+        if statusResult.damage > 0 {
+            showFloatingDamage("-\(statusResult.damage)", onEnemy: false)
+        }
 
         guard !messages.isEmpty else {
             if var s = battleState {

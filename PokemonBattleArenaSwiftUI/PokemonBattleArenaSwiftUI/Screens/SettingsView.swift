@@ -4,6 +4,7 @@ import SwiftUI
 /// a confirm-gated full data reset.
 struct SettingsView: View {
     var viewModel: GameViewModel
+    @Environment(AuthService.self) private var authService
     @State private var confirmReset = false
     @State private var cloudStatus = "Checking cloud sync..."
 
@@ -22,12 +23,13 @@ struct SettingsView: View {
             header.staggerAppear(0)
             ScrollView {
                 VStack(spacing: 12) {
-                    consoleSkinCard.staggerAppear(1)
-                    audioDisplayCard.staggerAppear(2)
-                    animSpeedCard.staggerAppear(3)
-                    cloudSyncCard.staggerAppear(4)
-                    aboutCard.staggerAppear(5)
-                    dangerZoneCard.staggerAppear(6)
+                    trainerAccountCard.staggerAppear(1)
+                    consoleSkinCard.staggerAppear(2)
+                    audioDisplayCard.staggerAppear(3)
+                    animSpeedCard.staggerAppear(4)
+                    cloudSyncCard.staggerAppear(5)
+                    aboutCard.staggerAppear(6)
+                    dangerZoneCard.staggerAppear(7)
                 }
                 .padding(10)
             }
@@ -36,6 +38,28 @@ struct SettingsView: View {
         .background(skin.medium)
         .task {
             cloudStatus = await SupabaseService.probeConnection()
+        }
+    }
+
+    private var trainerAccountCard: some View {
+        sectionCard(title: "\u{1F464} TRAINER") {
+            VStack(alignment: .leading, spacing: 8) {
+                if case .signedIn(let profile) = authService.state {
+                    Text(profile.trainerName.uppercased()).pixelText(9, skin.darkest)
+                    Text("LV.\(profile.level)  •  \(profile.wins)W / \(profile.losses)L")
+                        .pixelText(7, skin.dark)
+                } else {
+                    Text(viewModel.trainerData.name.uppercased()).pixelText(9, skin.darkest)
+                }
+                Button("LOG OUT") {
+                    Task {
+                        await authService.logOut()
+                        viewModel.navigate(.title)
+                    }
+                }
+                .buttonStyle(RetroButtonStyle(skin: skin, fontSize: 9))
+                .accessibilityLabel("Log out")
+            }
         }
     }
 
@@ -186,7 +210,7 @@ struct SettingsView: View {
                     .font(.pixel(7))
                     .foregroundStyle(skin.darkest)
                     .fixedSize(horizontal: false, vertical: true)
-                Text("LOCAL SAVE ALWAYS WORKS OFFLINE. CLOUD NEEDS ANON AUTH + TRAINERS TABLE.")
+                Text("LOCAL SAVE ALWAYS WORKS OFFLINE. CLOUD NEEDS TRAINER ID LOGIN + TRAINERS TABLE.")
                     .pixelText(6, skin.dark)
                     .fixedSize(horizontal: false, vertical: true)
                 Button("RECHECK") {

@@ -368,10 +368,12 @@ private struct EnemyPanelView: View {
             HStack(spacing: 6) {
                 Text("HP").font(.pixel(7)).foregroundStyle(skin.dark)
                 HPBarView(current: pokemon.currentHP, max: pokemon.maxHP, compact: true, skin: skin)
+                    .id("enemy-hp-\(pokemon.id)")
             }
             Text(pokemon.isFainted ? "FAINTED" : "\(pokemon.currentHP) / \(pokemon.maxHP)")
                 .pixelText(9, pokemon.isFainted ? Color(hex: "#c04000") : skin.darkest)
                 .frame(maxWidth: .infinity, alignment: .trailing)
+                .animation(nil, value: pokemon.currentHP)
         }
         .padding(.horizontal, 10)
         .padding(.vertical, 8)
@@ -399,9 +401,11 @@ private struct PlayerPanelView: View {
             HStack(spacing: 6) {
                 Text("HP").font(.pixel(7)).foregroundStyle(skin.dark)
                 HPBarView(current: pokemon.currentHP, max: pokemon.maxHP, skin: skin)
+                    .id("player-hp-\(pokemon.id)")
             }
             Text("\(pokemon.currentHP) / \(pokemon.maxHP)").pixelText(10, skin.darkest)
                 .frame(maxWidth: .infinity, alignment: .trailing)
+                .animation(nil, value: pokemon.currentHP)
         }
         .padding(.horizontal, 10)
         .padding(.vertical, 8)

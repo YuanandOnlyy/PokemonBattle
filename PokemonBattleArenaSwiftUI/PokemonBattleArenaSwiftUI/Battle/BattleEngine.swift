@@ -50,6 +50,17 @@ enum BattleEngine {
     }
 
     static func calculateDamage(attacker: BattlePokemon, move: Move, defender: BattlePokemon) -> DamageResult {
+        var rng = SystemRandomNumberGenerator()
+        return calculateDamage(attacker: attacker, move: move, defender: defender, rng: &rng)
+    }
+
+    /// Testable overload — pass a seeded generator to pin crit/variance rolls.
+    static func calculateDamage<G: RandomNumberGenerator>(
+        attacker: BattlePokemon,
+        move: Move,
+        defender: BattlePokemon,
+        rng: inout G
+    ) -> DamageResult {
         guard move.power > 0 else {
             return DamageResult(damage: 0, isCrit: false, effectiveness: 1, message: "")
         }
@@ -70,12 +81,12 @@ enum BattleEngine {
 
         let baseDamage = ((2 * level / 5 + 2) * power * (atkStat / defStat) / 50 + 2).rounded(.down)
 
-        let isCrit = Double.random(in: 0..<1) < 0.0625
+        let isCrit = Double.random(in: 0..<1, using: &rng) < 0.0625
         let critMult = isCrit ? 1.5 : 1.0
 
         let stab = attacker.types.contains(move.type) ? 1.5 : 1.0
         let effectiveness = typeEffectiveness(moveType: move.type, defenderTypes: defender.types)
-        let randomFactor = 0.85 + Double.random(in: 0..<1) * 0.15
+        let randomFactor = 0.85 + Double.random(in: 0..<1, using: &rng) * 0.15
 
         let finalDamage = max(1, Int((baseDamage * stab * effectiveness * critMult * randomFactor * burnMod * abilityMod).rounded(.down)))
 
@@ -102,6 +113,70 @@ enum BattleEngine {
 
         return DamageResult(damage: finalDamage, isCrit: isCrit, effectiveness: effectiveness,
                              message: message, abilityTriggered: abilityTriggered)
+    }
+
+    /// Deterministic damage with fixed unit rolls (crit roll, variance roll) for unit tests.
+    static func calculateDamage(
+        attacker: BattlePokemon,
+        move: Move,
+        defender: BattlePokemon,
+        critRoll: Double,
+        varianceRoll: Double
+    ) -> DamageResult {
+        calculateDamagePinned(
+            attacker: attacker, move: move, defender: defender,
+            isCrit: critRoll < 0.0625,
+            randomFactor: 0.85 + varianceRoll * 0.15
+        )
+    }
+
+    /// Exact HP math used by tests — pins crit + variance so `previousHP - damage` is deterministic.
+    static func calculateDamagePinned(
+        attacker: BattlePokemon,
+        move: Move,
+        defender: BattlePokemon,
+        isCrit: Bool,
+        randomFactor: Double
+    ) -> DamageResult {
+        guard move.power > 0 else {
+            return DamageResult(damage: 0, isCrit: false, effectiveness: 1, message: "")
+        }
+        if hasAbilityImmunity(moveType: move.type, defender: defender) {
+            return DamageResult(damage: 0, isCrit: false, effectiveness: 0,
+                                 message: "\(defender.name)'s Levitate makes it immune!")
+        }
+        let level = Double(attacker.level)
+        let power = Double(move.power)
+        let atkStat = (move.category == .physical ? Double(attacker.atk) : Double(attacker.spAtk)) * attacker.tempAtkBoost
+        let defStat = (move.category == .physical ? Double(defender.def) : Double(defender.spDef)) * defender.tempDefBoost
+        let burnMod = (attacker.status == .burn && move.category == .physical) ? 0.5 : 1.0
+        let abilityMod = abilityModifier(attacker: attacker, move: move)
+        let baseDamage = ((2 * level / 5 + 2) * power * (atkStat / defStat) / 50 + 2).rounded(.down)
+        let critMult = isCrit ? 1.5 : 1.0
+        let stab = attacker.types.contains(move.type) ? 1.5 : 1.0
+        let effectiveness = typeEffectiveness(moveType: move.type, defenderTypes: defender.types)
+        let finalDamage = max(1, Int((baseDamage * stab * effectiveness * critMult * randomFactor * burnMod * abilityMod).rounded(.down)))
+        var message = ""
+        if effectiveness == 0 {
+            message = "It doesn't affect \(defender.name)..."
+        } else if effectiveness > 1 {
+            message = "It's super effective!"
+        } else if effectiveness < 1 {
+            message = "It's not very effective..."
+        }
+        if isCrit {
+            message = message.isEmpty ? "A critical hit!" : message + " A critical hit!"
+        }
+        return DamageResult(damage: finalDamage, isCrit: isCrit, effectiveness: effectiveness, message: message)
+    }
+
+    /// Applies damage to a battle Pokemon and returns the new HP. This is the same mutation the
+    /// HP bar / numeric display read from `BattleState` after an attack resolves.
+    @discardableResult
+    static func applyDamage(to pokemon: inout BattlePokemon, damage: Int) -> Int {
+        pokemon.currentHP = max(0, pokemon.currentHP - damage)
+        if pokemon.currentHP == 0 { pokemon.isFainted = true }
+        return pokemon.currentHP
     }
 
     /// Static's 30% on-contact paralysis proc for physical moves.

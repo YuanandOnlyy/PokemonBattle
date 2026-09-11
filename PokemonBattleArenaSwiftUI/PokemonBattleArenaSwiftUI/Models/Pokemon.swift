@@ -58,6 +58,7 @@ struct BattlePokemon: Identifiable, Hashable {
     var tempAtkBoost: Double
     var tempDefBoost: Double
 
-    static func == (lhs: BattlePokemon, rhs: BattlePokemon) -> Bool { lhs.id == rhs.id }
-    func hash(into hasher: inout Hasher) { hasher.combine(id) }
+    // Synthesized Equatable/Hashable (all fields). An earlier id-only `==` made SwiftUI treat
+    // HP/status mutations as "unchanged," so HPBarView never saw `current` change and attack
+    // impact state on the panels looked frozen even though battle math had applied damage.
 }
