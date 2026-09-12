@@ -90,6 +90,10 @@ def simulate_battle_round() -> None:
     )
     assert immune["effectiveness"] == 0 and immune["damage"] == 0
 
+    # Explicit 0 damage must leave HP unchanged
+    hp, pct = apply_damage(100, 100, 0)
+    assert hp == 100 and abs(pct - 1.0) < 1e-9, f"expected 100/100%, got {hp}/{pct}"
+
     # Multi-turn HP drain until faint
     foe_hp, foe_max = 88, 88
     turns = 0

@@ -149,6 +149,7 @@ struct TrainerIDView: View {
 
     private func switchToMode(_ mode: AuthMode) {
         localError = nil
+        authService.clearError()
         showingForgotPassword = false
         forgotSent = false
         let apply = {

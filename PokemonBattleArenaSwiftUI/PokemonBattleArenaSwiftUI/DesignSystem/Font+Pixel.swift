@@ -1,11 +1,18 @@
 import SwiftUI
+#if canImport(UIKit)
+import UIKit
+#endif
 
 extension Font {
-    /// The Game Boy "Press Start 2P" pixel font. Requires PressStart2P-Regular.ttf to be added to
-    /// the app target and registered in Info.plist (see project README / setup notes) — until then
-    /// this silently falls back to the system monospaced font so the app still renders correctly.
+    /// The Game Boy "Press Start 2P" pixel font. Registered via Info.plist + Resources/PressStart2P-Regular.ttf.
+    /// Falls back to a monospaced system font if the custom face is unavailable.
     static func pixel(_ size: CGFloat) -> Font {
-        .custom("PressStart2P-Regular", size: size)
+        #if canImport(UIKit)
+        if UIFont(name: "PressStart2P-Regular", size: size) != nil {
+            return .custom("PressStart2P-Regular", size: size)
+        }
+        #endif
+        return .system(size: size, weight: .bold, design: .monospaced)
     }
 }
 

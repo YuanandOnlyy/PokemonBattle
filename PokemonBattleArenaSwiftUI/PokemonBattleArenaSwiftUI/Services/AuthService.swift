@@ -22,16 +22,27 @@ final class AuthService {
     private let authAPI: AuthAPI
     private let trainersAPI: TrainersAPI
 
-    /// Production initializer — talks to the real Supabase project.
+    /// Production initializer — talks to the real Supabase project when Secrets.plist is present.
     convenience init() {
-        let client = SupabaseClientProvider.shared
-        self.init(authAPI: LiveAuthAPI(client: client), trainersAPI: LiveTrainersAPI(client: client))
+        if SupabaseClientProvider.isConfigured {
+            let client = SupabaseClientProvider.shared
+            self.init(authAPI: LiveAuthAPI(client: client), trainersAPI: LiveTrainersAPI(client: client))
+        } else {
+            self.init(authAPI: UnconfiguredAuthAPI(), trainersAPI: UnconfiguredTrainersAPI())
+        }
     }
 
     /// Test / preview initializer with injectable collaborators.
     init(authAPI: AuthAPI, trainersAPI: TrainersAPI) {
         self.authAPI = authAPI
         self.trainersAPI = trainersAPI
+    }
+
+    /// Clears a displayed auth error so mode switches / retries start clean.
+    func clearError() {
+        if case .error = state {
+            state = .signedOut
+        }
     }
 
     func signUp(email: String, password: String, trainerName: String, avatarKey: String) async {
@@ -98,6 +109,9 @@ final class AuthService {
         if text.contains("network") || text.contains("offline") || text.contains("internet") || text.contains("timed out") {
             return "NO SIGNAL. CHECK YOUR CONNECTION!"
         }
+        if text.contains("secrets.plist") || text.contains("missing secrets") {
+            return "SUPABASE NOT CONFIGURED. ADD SECRETS.PLIST!"
+        }
         switch context {
         case .signUp: return "SOMETHING WENT WRONG. TRY AGAIN!"
         case .logIn: return "TRAINER ID NOT RECOGNIZED. TRY AGAIN!"
@@ -155,17 +169,114 @@ struct LiveAuthAPI: AuthAPI {
 struct LiveTrainersAPI: TrainersAPI {
     let client: SupabaseClient
 
+    private struct LegacyTrainerRow: Codable {
+        let id: UUID
+        let data: LegacyTrainerBlob
+    }
+
+    private struct LegacyTrainerBlob: Codable {
+        var name: String
+        var level: Int
+        var xp: Int
+        var wins: Int
+        var losses: Int
+        var streak: Int
+        var avatarKey: String
+
+        init(name: String, level: Int, xp: Int, wins: Int, losses: Int, streak: Int, avatarKey: String) {
+            self.name = name
+            self.level = level
+            self.xp = xp
+            self.wins = wins
+            self.losses = losses
+            self.streak = streak
+            self.avatarKey = avatarKey
+        }
+
+        init(from decoder: Decoder) throws {
+            let c = try decoder.container(keyedBy: CodingKeys.self)
+            name = try c.decodeIfPresent(String.self, forKey: .name) ?? "TRAINER"
+            level = try c.decodeIfPresent(Int.self, forKey: .level) ?? 1
+            xp = try c.decodeIfPresent(Int.self, forKey: .xp) ?? 0
+            wins = try c.decodeIfPresent(Int.self, forKey: .wins) ?? 0
+            losses = try c.decodeIfPresent(Int.self, forKey: .losses) ?? 0
+            streak = try c.decodeIfPresent(Int.self, forKey: .streak) ?? 0
+            avatarKey = try c.decodeIfPresent(String.self, forKey: .avatarKey) ?? "default_trainer"
+        }
+
+        enum CodingKeys: String, CodingKey {
+            case name, level, xp, wins, losses, streak, avatarKey
+        }
+    }
+
     func insert(_ profile: TrainerProfile) async throws {
-        try await client.from("trainers").insert(profile).execute()
+        do {
+            try await client.from("trainers").insert(profile).execute()
+        } catch {
+            // Live DB may still be on the pre-migration `data jsonb` shape.
+            if Self.isMissingColumnError(error) {
+                let legacy = LegacyTrainerRow(
+                    id: profile.id,
+                    data: LegacyTrainerBlob(
+                        name: profile.trainerName,
+                        level: profile.level,
+                        xp: profile.xp,
+                        wins: profile.wins,
+                        losses: profile.losses,
+                        streak: profile.winStreak,
+                        avatarKey: profile.avatarKey
+                    )
+                )
+                try await client.from("trainers").insert(legacy).execute()
+            } else {
+                throw error
+            }
+        }
     }
 
     func fetch(id: UUID) async throws -> TrainerProfile {
-        try await client.from("trainers")
-            .select()
-            .eq("id", value: id)
-            .single()
-            .execute()
-            .value
+        do {
+            let profile: TrainerProfile = try await client.from("trainers")
+                .select()
+                .eq("id", value: id)
+                .single()
+                .execute()
+                .value
+            return profile
+        } catch {
+            if Self.isMissingColumnError(error) || Self.isDecodingError(error) {
+                let legacy: LegacyTrainerRow = try await client.from("trainers")
+                    .select()
+                    .eq("id", value: id)
+                    .single()
+                    .execute()
+                    .value
+                return TrainerProfile(
+                    id: legacy.id,
+                    trainerName: legacy.data.name,
+                    avatarKey: legacy.data.avatarKey.isEmpty ? "default_trainer" : legacy.data.avatarKey,
+                    level: legacy.data.level,
+                    xp: legacy.data.xp,
+                    wins: legacy.data.wins,
+                    losses: legacy.data.losses,
+                    winStreak: legacy.data.streak
+                )
+            }
+            throw error
+        }
+    }
+
+    private static func isMissingColumnError(_ error: Error) -> Bool {
+        let text = error.localizedDescription
+        return text.contains("PGRST204")
+            || text.localizedCaseInsensitiveContains("could not find")
+            || text.localizedCaseInsensitiveContains("avatar_key")
+            || text.localizedCaseInsensitiveContains("trainer_name")
+            || text.localizedCaseInsensitiveContains("game_data")
+    }
+
+    private static func isDecodingError(_ error: Error) -> Bool {
+        error is DecodingError || error.localizedDescription.localizedCaseInsensitiveContains("decoding")
     }
 }
 
@@ -233,4 +344,22 @@ final class MockTrainersAPI: TrainersAPI {
         }
         return profile
     }
+}
+
+/// Used when Secrets.plist is missing so the app still boots (Trainer ID shows a clear error).
+struct UnconfiguredAuthAPI: AuthAPI {
+    private let message = "Missing Secrets.plist — copy Secrets.example.plist and add your Supabase URL/key."
+
+    func signUp(email: String, password: String) async throws -> UUID { throw AuthStubError.generic(message) }
+    func signIn(email: String, password: String) async throws -> UUID { throw AuthStubError.generic(message) }
+    func currentUserId() async throws -> UUID { throw AuthStubError.noSession }
+    func signOut() async throws {}
+    func resetPassword(email: String) async throws { throw AuthStubError.generic(message) }
+}
+
+struct UnconfiguredTrainersAPI: TrainersAPI {
+    private let message = "Missing Secrets.plist — copy Secrets.example.plist and add your Supabase URL/key."
+
+    func insert(_ profile: TrainerProfile) async throws { throw AuthStubError.generic(message) }
+    func fetch(id: UUID) async throws -> TrainerProfile { throw AuthStubError.generic(message) }
 }

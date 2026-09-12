@@ -319,7 +319,8 @@ enum GameData {
         consecutiveDefeats: 0,
         dailyQuests: [],
         dailyQuestDate: "",
-        lastTeamIDs: []
+        lastTeamIDs: [],
+        avatarKey: "default_trainer"
     )
 
     static func pokemon(id: Int) -> Pokemon? {

@@ -31,13 +31,16 @@ struct TrainerData: Codable, Hashable {
     var dailyQuestDate: String
     /// PokeAPI ids of the last team used in battle (up to 3). Powers Title → CONTINUE.
     var lastTeamIDs: [Int]
+    /// Trainer sprite key chosen at sign-up (synced to `public.trainers.avatar_key`).
+    var avatarKey: String
 
     init(
         name: String, level: Int, xp: Int, xpToNext: Int, wins: Int, losses: Int, streak: Int,
         bestStreak: Int, totalBattles: Int, totalDamageDealt: Int, totalCritHits: Int,
         totalSuperEffective: Int, favoritePokemons: [String: Int], battleHistory: [BattleRecord],
         achievements: [Achievement], items: [Item], settings: GameSettings, consecutiveDefeats: Int,
-        dailyQuests: [DailyQuest], dailyQuestDate: String, lastTeamIDs: [Int] = []
+        dailyQuests: [DailyQuest], dailyQuestDate: String, lastTeamIDs: [Int] = [],
+        avatarKey: String = "default_trainer"
     ) {
         self.name = name
         self.level = level
@@ -60,12 +63,14 @@ struct TrainerData: Codable, Hashable {
         self.dailyQuests = dailyQuests
         self.dailyQuestDate = dailyQuestDate
         self.lastTeamIDs = lastTeamIDs
+        self.avatarKey = avatarKey
     }
 
     enum CodingKeys: String, CodingKey {
         case name, level, xp, xpToNext, wins, losses, streak, bestStreak, totalBattles,
              totalDamageDealt, totalCritHits, totalSuperEffective, favoritePokemons, battleHistory,
-             achievements, items, settings, consecutiveDefeats, dailyQuests, dailyQuestDate, lastTeamIDs
+             achievements, items, settings, consecutiveDefeats, dailyQuests, dailyQuestDate, lastTeamIDs,
+             avatarKey
     }
 
     init(from decoder: Decoder) throws {
@@ -92,6 +97,7 @@ struct TrainerData: Codable, Hashable {
         dailyQuests = try container.decodeIfPresent([DailyQuest].self, forKey: .dailyQuests) ?? fallback.dailyQuests
         dailyQuestDate = try container.decodeIfPresent(String.self, forKey: .dailyQuestDate) ?? fallback.dailyQuestDate
         lastTeamIDs = try container.decodeIfPresent([Int].self, forKey: .lastTeamIDs) ?? fallback.lastTeamIDs
+        avatarKey = try container.decodeIfPresent(String.self, forKey: .avatarKey) ?? fallback.avatarKey
 
         // Achievement defs (name/description/target) always come from the current build's list;
         // only progress/unlocked/unlockedDate carry over from the save. Matches the `achievements.map`

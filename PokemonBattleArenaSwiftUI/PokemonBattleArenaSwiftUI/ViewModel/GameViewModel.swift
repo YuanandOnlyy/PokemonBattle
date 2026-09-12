@@ -55,6 +55,7 @@ final class GameViewModel {
     /// Apply a cloud `TrainerProfile` into the local save after sign-up / log-in / session restore.
     func applyAuthenticatedProfile(_ profile: TrainerProfile, isNewTrainer: Bool) {
         trainerData.name = profile.trainerName
+        trainerData.avatarKey = profile.avatarKey
         if !isNewTrainer {
             trainerData.level = max(trainerData.level, profile.level)
             trainerData.xp = max(trainerData.xp, profile.xp)
@@ -71,8 +72,22 @@ final class GameViewModel {
         saveTrainer()
         if isNewTrainer {
             navigate(.teamBuilder)
-        } else if currentScreen != .title && currentScreen != .teamBuilder {
-            navigate(.title)
+            return
+        }
+        // Pull full game_data after login/restore (init-time sync often runs before a session exists).
+        Task {
+            if let cloud = await SupabaseService.loadTrainer() {
+                let localAvatar = trainerData.avatarKey
+                trainerData = cloud
+                if trainerData.name.isEmpty { trainerData.name = profile.trainerName }
+                if trainerData.avatarKey.isEmpty || trainerData.avatarKey == "default_trainer" {
+                    trainerData.avatarKey = profile.avatarKey.isEmpty ? localAvatar : profile.avatarKey
+                }
+                saveTrainer()
+            }
+            if currentScreen != .title && currentScreen != .teamBuilder {
+                navigate(.title)
+            }
         }
     }
 
@@ -86,8 +101,10 @@ final class GameViewModel {
     /// Mirrors `resetGame` in Settings.tsx: wipes all progress but keeps the trainer's chosen name.
     func resetGame() {
         let name = trainerData.name
+        let avatar = trainerData.avatarKey
         trainerData = GameData.initialTrainer
         trainerData.name = name
+        trainerData.avatarKey = avatar
         saveTrainer()
         ensureDailyQuests()
     }
@@ -390,17 +407,23 @@ final class GameViewModel {
 
     // MARK: - Player actions
 
-    /// Mirrors `playerAttack` in GameContext.tsx. The pre-check below intentionally discards its
-    /// status roll (mirroring the original's `processStatusDamage({ ...player })` throwaway copy) —
-    /// the persisted status tick happens later in `executePlayerStatusTurn`, once per round.
+    /// Mirrors `playerAttack` in GameContext.tsx.
+    /// Status skip uses a scratch copy so end-of-round `executePlayerStatusTurn` still owns the
+    /// once-per-turn burn/poison/sleep tick. If the scratch *cures* sleep/freeze, that cure is
+    /// written back so the player isn't stuck frozen after a successful thaw roll.
     /// Phase is locked to `.animating` immediately so rapid taps cannot queue duplicate attacks.
     func playerAttack(_ moveIndex: Int) {
-        guard let state = battleState, state.phase == .menu || state.phase == .moveSelect else { return }
+        guard var state = battleState, state.phase == .menu || state.phase == .moveSelect else { return }
         guard !isActionLocked else { return }
         beginActionLock()
 
-        var scratch = state.playerTeam[state.activePlayerIndex]
+        let playerIdx = state.activePlayerIndex
+        var scratch = state.playerTeam[playerIdx]
         let statusResult = BattleEngine.processStatusDamage(&scratch)
+        if statusResult.cured {
+            state.playerTeam[playerIdx] = scratch
+            battleState = state
+        }
 
         if statusResult.shouldSkip {
             Task {

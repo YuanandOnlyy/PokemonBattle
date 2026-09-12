@@ -86,6 +86,12 @@ enum BattleEngine {
 
         let stab = attacker.types.contains(move.type) ? 1.5 : 1.0
         let effectiveness = typeEffectiveness(moveType: move.type, defenderTypes: defender.types)
+        if effectiveness == 0 {
+            return DamageResult(
+                damage: 0, isCrit: false, effectiveness: 0,
+                message: "It doesn't affect \(defender.name)..."
+            )
+        }
         let randomFactor = 0.85 + Double.random(in: 0..<1, using: &rng) * 0.15
 
         let finalDamage = max(1, Int((baseDamage * stab * effectiveness * critMult * randomFactor * burnMod * abilityMod).rounded(.down)))
@@ -93,9 +99,7 @@ enum BattleEngine {
         var message = ""
         var abilityTriggered: String?
 
-        if effectiveness == 0 {
-            message = "It doesn't affect \(defender.name)..."
-        } else if effectiveness >= 4 {
+        if effectiveness >= 4 {
             message = "It's SUPER EFFECTIVE!! (4\u{00D7})"
         } else if effectiveness > 1 {
             message = "It's super effective!"
@@ -155,11 +159,15 @@ enum BattleEngine {
         let critMult = isCrit ? 1.5 : 1.0
         let stab = attacker.types.contains(move.type) ? 1.5 : 1.0
         let effectiveness = typeEffectiveness(moveType: move.type, defenderTypes: defender.types)
+        if effectiveness == 0 {
+            return DamageResult(
+                damage: 0, isCrit: false, effectiveness: 0,
+                message: "It doesn't affect \(defender.name)..."
+            )
+        }
         let finalDamage = max(1, Int((baseDamage * stab * effectiveness * critMult * randomFactor * burnMod * abilityMod).rounded(.down)))
         var message = ""
-        if effectiveness == 0 {
-            message = "It doesn't affect \(defender.name)..."
-        } else if effectiveness > 1 {
+        if effectiveness > 1 {
             message = "It's super effective!"
         } else if effectiveness < 1 {
             message = "It's not very effective..."
