@@ -54,6 +54,10 @@ final class AuthService {
             preferredAuthMode = .logIn
             state = .signedIn(profile)
         } catch {
+            // Email confirmation pending is not a failure — switch to Log In so user can sign in after confirming.
+            if Self.isEmailConfirmationError(error) {
+                preferredAuthMode = .logIn
+            }
             state = .error(Self.friendlyMessage(for: error, context: .signUp))
         }
     }
@@ -94,11 +98,19 @@ final class AuthService {
 
     private enum ErrorContext { case signUp, logIn }
 
+    private static func isEmailConfirmationError(_ error: Error) -> Bool {
+        let text = error.localizedDescription.lowercased()
+        return text.contains("email confirmation") || text.contains("confirmation required") || text.contains("email_confirm")
+    }
+
     /// Map raw Supabase/network errors to the game's retro dialogue-box copy.
     private static func friendlyMessage(for error: Error, context: ErrorContext) -> String {
         let text = error.localizedDescription.lowercased()
-        if text.contains("already") || text.contains("registered") || text.contains("exists") || text.contains("user_already") {
+        if text.contains("already") || text.contains("registered") || text.contains("user_already") {
             return "THAT EMAIL IS ALREADY REGISTERED!"
+        }
+        if isEmailConfirmationError(error) {
+            return "CHECK YOUR EMAIL! CONFIRM ACCOUNT THEN LOG IN."
         }
         if text.contains("invalid login") || text.contains("invalid credentials") || text.contains("wrong") || text.contains("not confirmed") {
             return "TRAINER ID NOT RECOGNIZED. TRY AGAIN!"
@@ -106,11 +118,20 @@ final class AuthService {
         if text.contains("password") && (text.contains("weak") || text.contains("least") || text.contains("short")) {
             return "PASSWORD TOO WEAK. USE 8+ CHARACTERS!"
         }
+        if text.contains("rate") && (text.contains("limit") || text.contains("exceeded")) {
+            return "TOO MANY ATTEMPTS. WAIT A MINUTE AND TRY AGAIN!"
+        }
         if text.contains("network") || text.contains("offline") || text.contains("internet") || text.contains("timed out") {
             return "NO SIGNAL. CHECK YOUR CONNECTION!"
         }
         if text.contains("secrets.plist") || text.contains("missing secrets") {
             return "SUPABASE NOT CONFIGURED. ADD SECRETS.PLIST!"
+        }
+        if text.contains("relation") || text.contains("does not exist") || text.contains("pgrst205") || text.contains("schema cache") {
+            return "DATABASE NOT SET UP. RUN SQL MIGRATIONS IN SUPABASE!"
+        }
+        if text.contains("row level security") || text.contains("rls") || text.contains("policy") {
+            return "DATABASE PERMISSION ERROR. CHECK SUPABASE POLICIES!"
         }
         switch context {
         case .signUp: return "SOMETHING WENT WRONG. TRY AGAIN!"
@@ -273,6 +294,14 @@ struct LiveTrainersAPI: TrainersAPI {
             || text.localizedCaseInsensitiveContains("avatar_key")
             || text.localizedCaseInsensitiveContains("trainer_name")
             || text.localizedCaseInsensitiveContains("game_data")
+    }
+
+    static func isMissingTableError(_ error: Error) -> Bool {
+        let text = error.localizedDescription
+        return text.localizedCaseInsensitiveContains("relation")
+            || text.localizedCaseInsensitiveContains("does not exist")
+            || text.contains("PGRST205")
+            || text.localizedCaseInsensitiveContains("schema cache")
     }
 
     private static func isDecodingError(_ error: Error) -> Bool {
