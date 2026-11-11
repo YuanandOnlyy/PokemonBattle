@@ -1,5 +1,18 @@
 import Foundation
 
+/// Stats and metadata for a Mega Evolution form. Stored on `Pokemon.megaData`; copied into
+/// `BattlePokemon.megaData` at battle start so the engine can read it without touching GameData.
+struct MegaEvolution: Hashable {
+    var megaName: String
+    var types: [PokemonType]
+    var atk: Int
+    var def: Int
+    var spAtk: Int
+    var spDef: Int
+    var spd: Int
+    var ability: String?
+}
+
 /// A roster definition (base stats, moves, evolution info). Mirrors `Pokemon` in types.ts.
 /// Not persisted directly — battles work off a `BattlePokemon` snapshot instead.
 struct Pokemon: Identifiable, Hashable {
@@ -21,6 +34,7 @@ struct Pokemon: Identifiable, Hashable {
     var evolutionOf: Int? = nil
     var evolutionLevel: Int? = nil
     var rarity: Rarity? = nil
+    var megaData: MegaEvolution? = nil
 
     static func == (lhs: Pokemon, rhs: Pokemon) -> Bool { lhs.id == rhs.id }
     func hash(into hasher: inout Hasher) { hasher.combine(id) }
@@ -48,6 +62,8 @@ struct BattlePokemon: Identifiable, Hashable {
     var evolutionOf: Int?
     var evolutionLevel: Int?
     var rarity: Rarity?
+    var megaData: MegaEvolution?
+    var isMegaEvolved: Bool
 
     var currentHP: Int
     var maxHP: Int

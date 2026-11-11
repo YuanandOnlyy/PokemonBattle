@@ -33,6 +33,8 @@ struct TrainerData: Codable, Hashable {
     var lastTeamIDs: [Int]
     /// Trainer sprite key chosen at sign-up (synced to `public.trainers.avatar_key`).
     var avatarKey: String
+    /// Pokemon IDs permanently lost in Nuzlocke challenge. Empty in non-Nuzlocke play.
+    var nuzlockeDeadPokemonIDs: [Int]
 
     init(
         name: String, level: Int, xp: Int, xpToNext: Int, wins: Int, losses: Int, streak: Int,
@@ -40,7 +42,7 @@ struct TrainerData: Codable, Hashable {
         totalSuperEffective: Int, favoritePokemons: [String: Int], battleHistory: [BattleRecord],
         achievements: [Achievement], items: [Item], settings: GameSettings, consecutiveDefeats: Int,
         dailyQuests: [DailyQuest], dailyQuestDate: String, lastTeamIDs: [Int] = [],
-        avatarKey: String = "default_trainer"
+        avatarKey: String = "default_trainer", nuzlockeDeadPokemonIDs: [Int] = []
     ) {
         self.name = name
         self.level = level
@@ -64,13 +66,14 @@ struct TrainerData: Codable, Hashable {
         self.dailyQuestDate = dailyQuestDate
         self.lastTeamIDs = lastTeamIDs
         self.avatarKey = avatarKey
+        self.nuzlockeDeadPokemonIDs = nuzlockeDeadPokemonIDs
     }
 
     enum CodingKeys: String, CodingKey {
         case name, level, xp, xpToNext, wins, losses, streak, bestStreak, totalBattles,
              totalDamageDealt, totalCritHits, totalSuperEffective, favoritePokemons, battleHistory,
              achievements, items, settings, consecutiveDefeats, dailyQuests, dailyQuestDate, lastTeamIDs,
-             avatarKey
+             avatarKey, nuzlockeDeadPokemonIDs
     }
 
     init(from decoder: Decoder) throws {
@@ -98,6 +101,7 @@ struct TrainerData: Codable, Hashable {
         dailyQuestDate = try container.decodeIfPresent(String.self, forKey: .dailyQuestDate) ?? fallback.dailyQuestDate
         lastTeamIDs = try container.decodeIfPresent([Int].self, forKey: .lastTeamIDs) ?? fallback.lastTeamIDs
         avatarKey = try container.decodeIfPresent(String.self, forKey: .avatarKey) ?? fallback.avatarKey
+        nuzlockeDeadPokemonIDs = try container.decodeIfPresent([Int].self, forKey: .nuzlockeDeadPokemonIDs) ?? []
 
         // Achievement defs (name/description/target) always come from the current build's list;
         // only progress/unlocked/unlockedDate carry over from the save. Matches the `achievements.map`

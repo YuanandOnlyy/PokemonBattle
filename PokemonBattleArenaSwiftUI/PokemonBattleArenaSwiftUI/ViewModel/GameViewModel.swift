@@ -266,7 +266,8 @@ final class GameViewModel {
             isPlayerShaking: false, isEnemyShaking: false,
             isPlayerFlashing: false, isEnemyFlashing: false, isScreenShaking: false,
             isPlayerLunging: false, isEnemyLunging: false,
-            floatingDamage: nil, xpGained: [], levelUps: []
+            floatingDamage: nil, xpGained: [], levelUps: [],
+            megaUsedThisBattle: false
         )
         battleResult = nil
         trainerData.lastTeamIDs = playerTeam.map(\.id)
@@ -365,6 +366,15 @@ final class GameViewModel {
             }
             if questsCompleted > 0 {
                 trainerData.xp += questsCompleted * 50
+            }
+        }
+
+        // Nuzlocke: permanently retire any Pokemon that fainted this battle.
+        if trainerData.settings.challengeMode == .nuzlocke {
+            for p in state.playerTeam where p.isFainted {
+                if !trainerData.nuzlockeDeadPokemonIDs.contains(p.id) {
+                    trainerData.nuzlockeDeadPokemonIDs.append(p.id)
+                }
             }
         }
 
@@ -621,7 +631,7 @@ final class GameViewModel {
             return
         }
 
-        let move = BattleEngine.chooseEnemyMove(enemy: enemy, player: player)
+        let move = BattleEngine.chooseEnemyMove(enemy: enemy, player: player, difficulty: trainerData.settings.difficulty)
         messages.append("\(enemy.name) used \(move.name)!")
 
         await playAttackLunge(isPlayer: false)
@@ -781,6 +791,7 @@ final class GameViewModel {
     func useItem(_ item: Item, at itemIndex: Int) {
         guard let state = battleState else { return }
         guard state.phase == .menu || state.phase == .bagOpen || state.phase == .moveSelect else { return }
+        guard trainerData.settings.challengeMode != .noItems else { return }
         beginActionLock()
 
         var mutable = state
@@ -863,5 +874,51 @@ final class GameViewModel {
 
     func acknowledgeBattleEnd() {
         battleState = nil
+    }
+
+    // MARK: - Mega Evolution
+
+    /// Transforms the active player Pokemon into its Mega form (once per battle).
+    func megaEvolve() {
+        guard var state = battleState else { return }
+        guard !state.megaUsedThisBattle else { return }
+        guard !isActionLocked else { return }
+        guard state.phase == .menu || state.phase == .moveSelect else { return }
+
+        let playerIdx = state.activePlayerIndex
+        var player = state.playerTeam[playerIdx]
+        guard let mega = player.megaData, !player.isMegaEvolved else { return }
+
+        beginActionLock()
+
+        let originalName = player.name
+
+        // Apply Mega stats and type.
+        player.types    = mega.types
+        player.atk      = mega.atk
+        player.def      = mega.def
+        player.spAtk    = mega.spAtk
+        player.spDef    = mega.spDef
+        player.spd      = mega.spd
+        if let ability  = mega.ability { player.ability = ability }
+        player.name     = mega.megaName
+        player.isMegaEvolved = true
+
+        state.playerTeam[playerIdx] = player
+        state.megaUsedThisBattle    = true
+        state.phase                 = .animating
+        battleState = state
+
+        triggerAnimation(\.isPlayerFlashing, duration: 1.0)
+        triggerAnimation(\.isScreenShaking,  duration: 0.5)
+
+        Task {
+            await processMessages([
+                "\(originalName) is MEGA EVOLVING!",
+                "\(mega.megaName) has awakened its true power!"
+            ])
+            battleState?.phase = .menu
+            battleState?.displayedMessage = "What will \(mega.megaName) do?"
+        }
     }
 }

@@ -7,6 +7,7 @@ struct BattleScreenView: View {
 
     @State private var uiPhase: BattlePhase = .menu
     @State private var confirmRun = false
+    @State private var elapsedSeconds: Int = 0
 
     private var skin: SkinColors { viewModel.trainerData.settings.consoleSkin.colors }
 
@@ -25,6 +26,19 @@ struct BattleScreenView: View {
             if newPhase == .menu { uiPhase = .menu }
             if newPhase == .switchPokemon { uiPhase = .switchPokemon }
         }
+        .task(id: viewModel.battleState?.startTime) {
+            guard viewModel.trainerData.settings.challengeMode == .speedrun else { return }
+            guard let startTime = viewModel.battleState?.startTime else { return }
+            elapsedSeconds = 0
+            while viewModel.battleState != nil {
+                elapsedSeconds = Int(Date().timeIntervalSince(startTime))
+                try? await Task.sleep(nanoseconds: 1_000_000_000)
+            }
+        }
+    }
+
+    private func formatTime(_ seconds: Int) -> String {
+        String(format: "%d:%02d", seconds / 60, seconds % 60)
     }
 
     private func content(_ state: BattleState) -> some View {
@@ -136,7 +150,11 @@ struct BattleScreenView: View {
                 }
             }
             Spacer()
-            Text("TURN \(state.turn)").pixelText(8, skin.lightest)
+            if viewModel.trainerData.settings.challengeMode == .speedrun {
+                Text("\u{23F1}\(formatTime(elapsedSeconds))").pixelText(8, Color(hex: "#c0a000"))
+            } else {
+                Text("TURN \(state.turn)").pixelText(8, skin.lightest)
+            }
             Spacer()
             HStack(spacing: 5) {
                 ForEach(state.playerTeam.indices, id: \.self) { i in
@@ -183,7 +201,7 @@ struct BattleScreenView: View {
             if confirmRun {
                 confirmRunView
             } else if uiPhase == .menu || isBusy {
-                mainActions(isBusy: isBusy)
+                mainActions(state, isBusy: isBusy)
             } else if uiPhase == .moveSelect {
                 moveSelect(activePlayer, isBusy: isBusy)
             } else if uiPhase == .switchPokemon {
@@ -218,12 +236,42 @@ struct BattleScreenView: View {
         .padding(.vertical, 4)
     }
 
-    private func mainActions(isBusy: Bool) -> some View {
-        LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 8) {
-            actionButton("\u{2694} FIGHT", disabled: isBusy) { uiPhase = .moveSelect }
-            actionButton("\u{1F392} BAG", disabled: isBusy) { uiPhase = .bagOpen }
-            actionButton("\u{1F504} POKEMON", disabled: isBusy) { uiPhase = .switchPokemon }
-            actionButton("\u{1F3C3} RUN", disabled: isBusy) { confirmRun = true }
+    private func mainActions(_ state: BattleState, isBusy: Bool) -> some View {
+        let activePlayer = state.playerTeam[state.activePlayerIndex]
+        let canMega = !state.megaUsedThisBattle
+            && activePlayer.megaData != nil
+            && !activePlayer.isMegaEvolved
+        let noItems = viewModel.trainerData.settings.challengeMode == .noItems
+
+        return VStack(spacing: 8) {
+            if canMega {
+                Button {
+                    viewModel.megaEvolve()
+                    uiPhase = .menu
+                } label: {
+                    HStack(spacing: 6) {
+                        Text("\u{2728}")
+                        Text("MEGA EVOLVE \(activePlayer.name.uppercased())!")
+                        Text("\u{2728}")
+                    }
+                    .font(.pixel(10))
+                    .foregroundStyle(Color(hex: "#0f380f"))
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 10)
+                    .background(Color(hex: "#c0a000"))
+                    .overlay(Rectangle().stroke(Color(hex: "#0f380f"), lineWidth: 3))
+                }
+                .buttonStyle(.plain)
+                .disabled(isBusy)
+                .opacity(isBusy ? 0.5 : 1)
+            }
+
+            LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 8) {
+                actionButton("\u{2694} FIGHT", disabled: isBusy) { uiPhase = .moveSelect }
+                actionButton(noItems ? "\u{1F392} BAG \u{1F6AB}" : "\u{1F392} BAG", disabled: isBusy || noItems) { uiPhase = .bagOpen }
+                actionButton("\u{1F504} POKEMON", disabled: isBusy) { uiPhase = .switchPokemon }
+                actionButton("\u{1F3C3} RUN", disabled: isBusy) { confirmRun = true }
+            }
         }
     }
 
@@ -358,6 +406,12 @@ private struct EnemyPanelView: View {
         VStack(alignment: .leading, spacing: 4) {
             HStack {
                 Text(pokemon.name.uppercased()).pixelText(11, skin.darkest)
+                if pokemon.isMegaEvolved {
+                    Text("MEGA").font(.pixel(6)).foregroundStyle(Color(hex: "#c0a000"))
+                        .padding(.horizontal, 4).padding(.vertical, 2)
+                        .background(Color(hex: "#3a2a00"))
+                        .overlay(Rectangle().stroke(Color(hex: "#c0a000"), lineWidth: 1))
+                }
                 Spacer(minLength: 4)
                 Text("Lv\(pokemon.level)").pixelText(8, skin.dark)
             }
@@ -391,6 +445,12 @@ private struct PlayerPanelView: View {
         VStack(alignment: .leading, spacing: 4) {
             HStack {
                 Text(pokemon.name.uppercased()).pixelText(11, skin.darkest)
+                if pokemon.isMegaEvolved {
+                    Text("MEGA").font(.pixel(6)).foregroundStyle(Color(hex: "#c0a000"))
+                        .padding(.horizontal, 4).padding(.vertical, 2)
+                        .background(Color(hex: "#3a2a00"))
+                        .overlay(Rectangle().stroke(Color(hex: "#c0a000"), lineWidth: 1))
+                }
                 Spacer(minLength: 4)
                 Text("Lv\(pokemon.level)").pixelText(8, skin.dark)
             }

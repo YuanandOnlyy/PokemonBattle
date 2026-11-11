@@ -27,9 +27,11 @@ struct SettingsView: View {
                     consoleSkinCard.staggerAppear(2)
                     audioDisplayCard.staggerAppear(3)
                     animSpeedCard.staggerAppear(4)
-                    cloudSyncCard.staggerAppear(5)
-                    aboutCard.staggerAppear(6)
-                    dangerZoneCard.staggerAppear(7)
+                    difficultyCard.staggerAppear(5)
+                    challengeModeCard.staggerAppear(6)
+                    cloudSyncCard.staggerAppear(7)
+                    aboutCard.staggerAppear(8)
+                    dangerZoneCard.staggerAppear(9)
                 }
                 .padding(10)
             }
@@ -200,6 +202,90 @@ struct SettingsView: View {
         .padding(.vertical, 10)
         .background(isSelected ? skin.darkest : skin.medium)
         .overlay(Rectangle().stroke(skin.darkest, lineWidth: 3))
+        .buttonStyle(.plain)
+    }
+
+    private var difficultyCard: some View {
+        sectionCard(title: "\u{1F9E0} BATTLE DIFFICULTY") {
+            VStack(spacing: 6) {
+                HStack(spacing: 6) {
+                    difficultyButton(.easy, label: "EASY")
+                    difficultyButton(.normal, label: "NORMAL")
+                }
+                HStack(spacing: 6) {
+                    difficultyButton(.hard, label: "HARD")
+                    difficultyButton(.expert, label: "EXPERT")
+                }
+                Text(settings.difficulty.description.uppercased())
+                    .pixelText(6, skin.dark)
+                    .multilineTextAlignment(.center)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .padding(.top, 4)
+            }
+        }
+    }
+
+    private func difficultyButton(_ diff: GameSettings.BattleDifficulty, label: String) -> some View {
+        let isSelected = settings.difficulty == diff
+        return Button(label) {
+            viewModel.updateTrainer { $0.settings.difficulty = diff }
+        }
+        .font(.pixel(9))
+        .foregroundStyle(isSelected ? skin.lightest : skin.darkest)
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 10)
+        .background(isSelected ? skin.darkest : skin.medium)
+        .overlay(Rectangle().stroke(skin.darkest, lineWidth: 3))
+        .buttonStyle(.plain)
+    }
+
+    private var challengeModeCard: some View {
+        sectionCard(title: "\u{1F3C6} CHALLENGE MODE") {
+            VStack(spacing: 6) {
+                ForEach(GameSettings.ChallengeMode.allCases, id: \.self) { mode in
+                    challengeModeButton(mode)
+                }
+
+                if settings.challengeMode == .nuzlocke &&
+                    !viewModel.trainerData.nuzlockeDeadPokemonIDs.isEmpty {
+                    Button("\u{1F4A5} RESET NUZLOCKE (\(viewModel.trainerData.nuzlockeDeadPokemonIDs.count) LOST)") {
+                        viewModel.updateTrainer { $0.nuzlockeDeadPokemonIDs = [] }
+                    }
+                    .font(.pixel(8))
+                    .foregroundStyle(Color(hex: "#e0a0a0"))
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 8)
+                    .background(Color(hex: "#6a0000"))
+                    .overlay(Rectangle().stroke(Color(hex: "#c04000"), lineWidth: 3))
+                    .buttonStyle(.plain)
+                    .padding(.top, 4)
+                }
+            }
+        }
+    }
+
+    private func challengeModeButton(_ mode: GameSettings.ChallengeMode) -> some View {
+        let isSelected = settings.challengeMode == mode
+        return Button {
+            viewModel.updateTrainer { $0.settings.challengeMode = mode }
+        } label: {
+            HStack(spacing: 8) {
+                Text(isSelected ? "\u{25B6}" : " ").font(.pixel(9)).foregroundStyle(skin.lightest)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(mode.displayName.uppercased())
+                        .font(.pixel(9))
+                        .foregroundStyle(isSelected ? skin.lightest : skin.darkest)
+                    Text(mode.description.uppercased())
+                        .font(.pixel(6))
+                        .foregroundStyle(isSelected ? skin.medium : skin.dark)
+                }
+                Spacer()
+            }
+            .padding(.horizontal, 10)
+            .padding(.vertical, 8)
+            .background(isSelected ? skin.darkest : skin.medium)
+            .overlay(Rectangle().stroke(isSelected ? Color(hex: "#c0a000") : skin.darkest, lineWidth: 3))
+        }
         .buttonStyle(.plain)
     }
 

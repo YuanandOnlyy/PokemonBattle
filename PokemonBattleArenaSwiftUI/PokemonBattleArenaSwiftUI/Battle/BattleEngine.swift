@@ -192,27 +192,50 @@ enum BattleEngine {
         defender.ability == "Static" && move.category == .physical && Double.random(in: 0..<1) < 0.3
     }
 
-    static func chooseEnemyMove(enemy: BattlePokemon, player: BattlePokemon) -> Move {
+    static func chooseEnemyMove(
+        enemy: BattlePokemon,
+        player: BattlePokemon,
+        difficulty: GameSettings.BattleDifficulty = .normal
+    ) -> Move {
         let available = enemy.moves.filter { $0.currentPP > 0 }
         guard !available.isEmpty else { return .struggle }
+
+        // Easy: purely random — no scoring at all.
+        if difficulty == .easy { return available.randomElement() ?? .struggle }
 
         var best = available[0]
         var bestScore = -Double.infinity
 
         for move in available {
             if move.power == 0 {
+                var statusScore = 0.0
                 if move.statusEffect != nil, player.status == nil, !move.isSelfStatus {
-                    let score = 30.0
-                    if score > bestScore { bestScore = score; best = move }
+                    statusScore = difficulty == .expert ? 60.0 : 30.0
+                } else if difficulty == .expert, move.isSelfStatus, move.healPercent != nil {
+                    let hpRatio = Double(enemy.currentHP) / Double(max(1, enemy.maxHP))
+                    statusScore = hpRatio < 0.5 ? 50.0 : 0.0
                 }
+                if statusScore > 0, statusScore > bestScore { bestScore = statusScore; best = move }
                 continue
             }
 
-            let eff = hasAbilityImmunity(moveType: move.type, defender: player) ? 0 : typeEffectiveness(moveType: move.type, defenderTypes: player.types)
+            let eff = hasAbilityImmunity(moveType: move.type, defender: player) ? 0.0
+                    : typeEffectiveness(moveType: move.type, defenderTypes: player.types)
             let stab = enemy.types.contains(move.type) ? 1.5 : 1.0
             let abilityBoost = abilityModifier(attacker: enemy, move: move)
-            let score = Double(move.power) * eff * stab * (Double(move.accuracy) / 100) * abilityBoost
-            let jitter = 0.9 + Double.random(in: 0..<1) * 0.2
+            var score = Double(move.power) * eff * stab * (Double(move.accuracy) / 100) * abilityBoost
+
+            // Hard/Expert: extra weight on super-effective coverage.
+            if (difficulty == .hard || difficulty == .expert), eff > 1 { score *= 1.5 }
+
+            let jitter: Double
+            switch difficulty {
+            case .easy:   jitter = 1.0  // unreachable — handled above
+            case .normal: jitter = 0.9 + Double.random(in: 0..<1) * 0.2
+            case .hard:   jitter = 0.97 + Double.random(in: 0..<1) * 0.06
+            case .expert: jitter = 1.0
+            }
+
             let finalScore = score * jitter
             if finalScore > bestScore { bestScore = finalScore; best = move }
         }
@@ -312,6 +335,7 @@ enum BattleEngine {
             level: pokemon.level, xp: pokemon.xp, xpToNext: pokemon.xpToNext, ability: pokemon.ability,
             evolvesInto: pokemon.evolvesInto, evolutionOf: pokemon.evolutionOf,
             evolutionLevel: pokemon.evolutionLevel, rarity: pokemon.rarity,
+            megaData: pokemon.megaData, isMegaEvolved: false,
             currentHP: pokemon.baseHP, maxHP: pokemon.baseHP, status: nil,
             sleepTurns: 0, statusTurnsLeft: 0, isFainted: false, tempAtkBoost: 1, tempDefBoost: 1
         )

@@ -27,7 +27,11 @@ enum GameData {
                 .status("Sleep Powder", .grass, 75, 15, statusEffect: .sleep),
             ],
             level: 50, xp: 0, xpToNext: 100, ability: "Overgrow",
-            evolutionOf: 1, rarity: .rare
+            evolutionOf: 1, rarity: .rare,
+            megaData: MegaEvolution(
+                megaName: "Mega Venusaur", types: [.grass, .poison],
+                atk: 100, def: 123, spAtk: 122, spDef: 120, spd: 80, ability: "Thick Fat"
+            )
         ),
         Pokemon(
             id: 4, name: "Charmander", types: [.fire], baseHP: 78,
@@ -51,7 +55,11 @@ enum GameData {
                 .physical("Wing Attack", .flying, 60, 100, 35),
             ],
             level: 50, xp: 0, xpToNext: 100, ability: "Blaze",
-            evolutionOf: 4, rarity: .rare
+            evolutionOf: 4, rarity: .rare,
+            megaData: MegaEvolution(
+                megaName: "Mega Charizard X", types: [.fire, .dragon],
+                atk: 130, def: 111, spAtk: 130, spDef: 85, spd: 100, ability: "Tough Claws"
+            )
         ),
         Pokemon(
             id: 7, name: "Squirtle", types: [.water], baseHP: 88,
@@ -75,7 +83,11 @@ enum GameData {
                 .special("Ice Beam", .ice, 90, 100, 10),
             ],
             level: 50, xp: 0, xpToNext: 100, ability: "Torrent",
-            evolutionOf: 7, rarity: .rare
+            evolutionOf: 7, rarity: .rare,
+            megaData: MegaEvolution(
+                megaName: "Mega Blastoise", types: [.water],
+                atk: 103, def: 120, spAtk: 135, spDef: 115, spd: 78, ability: "Mega Launcher"
+            )
         ),
         Pokemon(
             id: 25, name: "Pikachu", types: [.electric], baseHP: 100,
@@ -125,7 +137,11 @@ enum GameData {
                 .special("Sludge Bomb", .poison, 90, 100, 10),
             ],
             level: 50, xp: 0, xpToNext: 100, ability: "Levitate",
-            evolutionOf: 93, rarity: .rare
+            evolutionOf: 93, rarity: .rare,
+            megaData: MegaEvolution(
+                megaName: "Mega Gengar", types: [.ghost, .poison],
+                atk: 65, def: 80, spAtk: 170, spDef: 95, spd: 130, ability: "Shadow Tag"
+            )
         ),
 
         // MARK: Fighting/Steel line
@@ -151,7 +167,11 @@ enum GameData {
                 .physical("Bone Rush", .ground, 25, 90, 10),
             ],
             level: 50, xp: 0, xpToNext: 100, ability: "Inner Focus",
-            evolutionOf: 447, rarity: .rare
+            evolutionOf: 447, rarity: .rare,
+            megaData: MegaEvolution(
+                megaName: "Mega Lucario", types: [.fighting, .steel],
+                atk: 145, def: 88, spAtk: 140, spDef: 70, spd: 112, ability: "Adaptability"
+            )
         ),
 
         // MARK: Dragon/Ground line
@@ -177,7 +197,11 @@ enum GameData {
                 .physical("Iron Head", .steel, 80, 100, 15),
             ],
             level: 50, xp: 0, xpToNext: 100, ability: "Sand Veil",
-            evolutionOf: 444, rarity: .rare
+            evolutionOf: 444, rarity: .rare,
+            megaData: MegaEvolution(
+                megaName: "Mega Garchomp", types: [.dragon, .ground],
+                atk: 170, def: 115, spAtk: 120, spDef: 95, spd: 92, ability: "Sand Force"
+            )
         ),
 
         // MARK: Water/Dark
@@ -249,7 +273,11 @@ enum GameData {
                 .special("Aura Sphere", .fighting, 80, 100, 20),
                 .status("Recover", .psychic, 100, 10, isSelfStatus: true, healPercent: 50),
             ],
-            level: 50, xp: 0, xpToNext: 100, ability: "Pressure", rarity: .legendary
+            level: 50, xp: 0, xpToNext: 100, ability: "Pressure", rarity: .legendary,
+            megaData: MegaEvolution(
+                megaName: "Mega Mewtwo Y", types: [.psychic],
+                atk: 110, def: 90, spAtk: 194, spDef: 100, spd: 140, ability: "Insomnia"
+            )
         ),
     ]
 
@@ -320,7 +348,8 @@ enum GameData {
         dailyQuests: [],
         dailyQuestDate: "",
         lastTeamIDs: [],
-        avatarKey: "default_trainer"
+        avatarKey: "default_trainer",
+        nuzlockeDeadPokemonIDs: []
     )
 
     static func pokemon(id: Int) -> Pokemon? {

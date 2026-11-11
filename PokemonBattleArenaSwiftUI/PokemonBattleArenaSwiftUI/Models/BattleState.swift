@@ -57,6 +57,8 @@ struct BattleState {
     var floatingDamage: FloatingDamage?
     var xpGained: [XPEntry]
     var levelUps: [String]
+    /// True once a Mega Evolution has been used this battle (one per battle, player-side only).
+    var megaUsedThisBattle: Bool
 }
 
 /// Summary shown on the Victory/Defeat screens. Mirrors the inline `BattleResult` interface

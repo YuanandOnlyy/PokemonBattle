@@ -16,23 +16,66 @@ struct TeamBuilderView: View {
     private var teamIDs: Set<Int> { Set(team.compactMap { $0?.id }) }
     private var teamCount: Int { team.compactMap { $0 }.count }
 
+    private var challengeMode: GameSettings.ChallengeMode {
+        viewModel.trainerData.settings.challengeMode
+    }
+
+    private var deadIDs: Set<Int> {
+        Set(viewModel.trainerData.nuzlockeDeadPokemonIDs)
+    }
+
     private var filtered: [Pokemon] {
         GameData.allPokemon.filter { pokemon in
             let matchesSearch = search.isEmpty || pokemon.name.localizedCaseInsensitiveContains(search)
-            let matchesType = typeFilter == nil || pokemon.types.contains(typeFilter ?? .normal)
-            return matchesSearch && matchesType
+            let matchesType   = typeFilter == nil || pokemon.types.contains(typeFilter!)
+            let isAlive       = challengeMode != .nuzlocke || !deadIDs.contains(pokemon.id)
+            return matchesSearch && matchesType && isAlive
         }
     }
 
     var body: some View {
         VStack(spacing: 0) {
             header.staggerAppear(0)
-            teamSlots.staggerAppear(1)
-            searchAndFilter.staggerAppear(2)
-            pokemonGrid.staggerAppear(3)
+            if challengeMode != .none { challengeBanner.staggerAppear(1) }
+            teamSlots.staggerAppear(2)
+            searchAndFilter.staggerAppear(3)
+            pokemonGrid.staggerAppear(4)
         }
         .background(skin.medium)
         .onAppear { restoreLastTeamIfNeeded() }
+    }
+
+    private var challengeBanner: some View {
+        let allDead = challengeMode == .nuzlocke &&
+            GameData.allPokemon.allSatisfy { deadIDs.contains($0.id) }
+        return VStack(spacing: 0) {
+            HStack(spacing: 6) {
+                Text("\u{26A0}")
+                Text("\(challengeMode.displayName.uppercased()) MODE")
+                    .pixelText(8, Color(hex: "#c0a000"))
+                Spacer()
+                if challengeMode == .nuzlocke && !deadIDs.isEmpty {
+                    Text("\(deadIDs.count) LOST").pixelText(7, Color(hex: "#c04000"))
+                }
+                if challengeMode == .monotype {
+                    Text(typeFilter.map { "TYPE: \($0.rawValue)" } ?? "PICK A TYPE BELOW")
+                        .pixelText(7, typeFilter == nil ? Color(hex: "#c04000") : Color(hex: "#c0a000"))
+                }
+            }
+            .padding(.horizontal, 12)
+            .padding(.vertical, 6)
+            .background(Color(hex: "#3a2a00"))
+            .overlay(Rectangle().fill(Color(hex: "#c0a000")).frame(height: 2), alignment: .bottom)
+
+            if allDead {
+                Text("NUZLOCKE OVER \u{2014} ALL POKEMON HAVE FAINTED. RESET IN SETTINGS.")
+                    .pixelText(8, Color(hex: "#c04000"))
+                    .multilineTextAlignment(.center)
+                    .padding(10)
+                    .frame(maxWidth: .infinity)
+                    .background(Color(hex: "#3a0a0a"))
+            }
+        }
     }
 
     private func restoreLastTeamIfNeeded() {
@@ -43,6 +86,7 @@ struct TeamBuilderView: View {
         guard ids.count == 3 else { return }
         var restored: [Pokemon?] = [nil, nil, nil]
         for (index, id) in ids.prefix(3).enumerated() {
+            if challengeMode == .nuzlocke && deadIDs.contains(id) { continue }
             restored[index] = GameData.pokemon(id: id)
         }
         if restored.compactMap({ $0 }).count == 3 {
@@ -201,6 +245,19 @@ struct TeamBuilderView: View {
     private func addToTeam(_ pokemon: Pokemon) {
         guard !teamIDs.contains(pokemon.id) else { return }
         guard let emptyIndex = team.firstIndex(where: { $0 == nil }) else { return }
+
+        if challengeMode == .monotype {
+            if let filter = typeFilter {
+                guard pokemon.types.contains(filter) else {
+                    errorMessage = "MONOTYPE: ONLY \(filter.rawValue.uppercased()) ALLOWED!"
+                    return
+                }
+            } else {
+                errorMessage = "MONOTYPE: SELECT A TYPE FILTER FIRST!"
+                return
+            }
+        }
+
         team[emptyIndex] = pokemon
         errorMessage = ""
     }
@@ -211,6 +268,30 @@ struct TeamBuilderView: View {
             errorMessage = "SELECT 3 POKEMON TO CONTINUE!"
             return
         }
+
+        if challengeMode == .monotype {
+            guard let filter = typeFilter else {
+                errorMessage = "MONOTYPE: SELECT A TYPE FILTER FIRST!"
+                return
+            }
+            guard selected.allSatisfy({ $0.types.contains(filter) }) else {
+                errorMessage = "MONOTYPE: ALL POKEMON MUST BE \(filter.rawValue.uppercased()) TYPE!"
+                return
+            }
+        }
+
+        if challengeMode == .nuzlocke {
+            if selected.contains(where: { deadIDs.contains($0.id) }) {
+                errorMessage = "NUZLOCKE: TEAM CONTAINS A LOST POKEMON!"
+                return
+            }
+            let available = GameData.allPokemon.filter { !deadIDs.contains($0.id) }
+            guard !available.isEmpty else {
+                errorMessage = "NUZLOCKE OVER! RESET IN SETTINGS."
+                return
+            }
+        }
+
         viewModel.startBattle(playerTeam: selected)
     }
 }
